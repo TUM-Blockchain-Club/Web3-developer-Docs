@@ -1,0 +1,51 @@
+# Connecting to MetaMask
+
+The first step in any dApp is to connect to the user's wallet. In this guide, we'll create a simple "Connect Wallet" button that requests access to the user's MetaMask account.
+
+## The `window.ethereum` Object
+
+Modern browsers with MetaMask installed have a special object available at `window.ethereum`. This object is our gateway to the user's wallet and the Ethereum blockchain. We can use it to request accounts, sign transactions, and interact with smart contracts.
+
+## Creating a Connect Button
+
+Let's create a React component that handles the connection logic. In your Next.js project, you can create a new file, for example, `components/ConnectWallet.js`, and add the following code:
+
+```javascript
+import { useState, useEffect } from 'react';
+import { ethers } from 'ethers';
+
+export default function ConnectWallet() {
+  const [account, setAccount] = useState(null);
+
+  async function connectWallet() {
+    if (typeof window.ethereum !== 'undefined') {
+      try {
+        const provider = new ethers.providers.Web3Provider(window.ethereum);
+        const accounts = await provider.send("eth_requestAccounts", []);
+        setAccount(accounts[0]);
+      } catch (error) {
+        console.error("Error connecting to MetaMask:", error);
+      }
+    } else {
+      alert("Please install MetaMask!");
+    }
+  }
+
+  return (
+    <div>
+      {account ? (
+        <p>Connected: {`${account.substring(0, 6)}...${account.substring(account.length - 4)}`}</p>
+      ) : (
+        <button onClick={connectWallet}>Connect Wallet</button>
+      )}
+    </div>
+  );
+}
+```
+
+This component does a few things:
+- It checks if `window.ethereum` exists.
+- When the button is clicked, it requests access to the user's accounts using `eth_requestAccounts`.
+- If successful, it stores the first account in the component's state and displays a truncated version of the address.
+
+Now you can import and use this component on any page in your Next.js app! For more information on `ethers.js`, check out the [official documentation](https://docs.ethers.io/). To learn more about the `window.ethereum` object, the [MetaMask developer documentation](https://docs.metamask.io/guide/ethereum-provider.html) is an excellent resource.

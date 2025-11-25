@@ -1,0 +1,22 @@
+# Understanding and Exporting Your Private Key
+
+While your seed phrase can restore your entire wallet, each individual account within your wallet has its own **private key**. This key is what gives you ultimate control over your account's assets.
+
+## What is a Private Key?
+
+A private key is a long, alphanumeric string that is cryptographically linked to your public wallet address. It's used to sign transactions, proving that you are the legitimate owner of the account.
+
+**Warning:** Your private key is as sensitive as your seed phrase. Anyone who has it can access your funds. **Never share it.**
+
+## How to Export Your Private Key from MetaMask
+
+For development purposes, you might need to import your private key into a development framework like Hardhat or Foundry. Here's how to export it securely from MetaMask:
+
+1.  **Open MetaMask** and select the account you want to export.
+2.  **Click the three dots** (⋮) to the right of your account name.
+3.  **Select "Account details."**
+4.  **Click "Export Private Key."**
+5.  **Enter your MetaMask password** to confirm.
+6.  Your private key will be displayed. **Copy it** and use it immediately in your development environment.
+
+Avoid storing your private key in plain text. If you're using it in a script or a `.env` file, make sure that file is included in your `.gitignore` to prevent it from being accidentally committed to a public repository.

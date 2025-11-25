@@ -12,15 +12,14 @@ export const metadata = {
 const banner = <Banner storageKey="some-key">Nextra 4.0 is released 🎉</Banner>
 const navbar = (
   <Navbar
-    logo={<b>Web3 Developer Docs</b>}
+    logo={<b>Web3 Developer Docs by TBC</b>}
     logoLink="https://www.tum-blockchain.com/"
-    projectIcon={<Image src="https://www.tum-blockchain.com/tbc-wordmark.png" alt="TUM Blockchain Club" width={100} height={100} />}
     projectLink="https://github.com/TUM-Blockchain-Club/Web3-developer-Docs"
 
     // ... Your additional navbar options
   />
 )
-const footer = <Footer>MIT {new Date().getFullYear()} © Nextra.</Footer>
+const footer = <Footer>MIT {new Date().getFullYear()} © TUM Blockchain Club.</Footer>
  
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -42,7 +41,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           // banner={banner}
           navbar={navbar}
           pageMap={await getPageMap()}
-          docsRepositoryBase="https://github.com/shuding/nextra/tree/main/docs"
+          docsRepositoryBase="https://github.com/TUM-Blockchain-Club/Web3-developer-Docs"
           footer={footer}
           // ... Your additional layout options
         >

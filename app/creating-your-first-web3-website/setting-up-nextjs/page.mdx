@@ -1,0 +1,38 @@
+# Setting Up Your Next.js Project
+
+Next.js is a fantastic choice for building a Web3 frontend. Its features like server-side rendering and API routes make it a versatile framework. Let's get a new project up and running.
+
+## Step 1: Create a New Next.js App
+
+If you don't have it already, you'll need Node.js and a package manager like `pnpm`, `npm`, or `yarn`. We recommend `pnpm`.
+
+Open your terminal and run the following command:
+
+```bash
+pnpm create next-app my-web3-app
+```
+
+This will create a new directory called `my-web3-app` with a boilerplate Next.js project.
+
+## Step 2: Install Web3 Dependencies
+
+Next, we need to install the libraries that will allow our app to communicate with the blockchain. For this guide, we'll use `ethers.js`.
+
+Navigate into your new project directory and install `ethers.js`:
+
+```bash
+cd my-web3-app
+pnpm add ethers
+```
+
+## Step 3: Start the Development Server
+
+Now, you can start the Next.js development server to see your app in action:
+
+```bash
+pnpm dev
+```
+
+Open your browser and navigate to `http://localhost:3000`. You should see the default Next.js welcome page.
+
+With your project set up, you're now ready to start writing some Web3 code. In the next section, we'll create a simple component to connect to a user's MetaMask wallet.
