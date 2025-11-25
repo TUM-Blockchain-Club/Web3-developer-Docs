@@ -59,6 +59,14 @@ Want to contribute to these docs? We welcome contributions from the community!
 
 ---
 
+## 🤕 Feeling Lost?
+
+If you are lost like I was in the beginning watch this video of this indian (yes I had to consult the indian youtuber)
+
+[https://www.youtube.com/watch?v=Vlj1TSW-FD0](https://www.youtube.com/watch?v=Vlj1TSW-FD0)
+
+---
+
 ## 🦁 About TUM Blockchain Club
 
 The **TUM Blockchain Club** is a student initiative at the Technical University of Munich. We connect students, researchers, and industry leaders to foster innovation in the blockchain space.
