@@ -1,8 +1,6 @@
-"use client"
 import { Footer, Layout, Navbar } from 'nextra-theme-docs'
-import { Banner, Head } from 'nextra/components'
+import { Head } from 'nextra/components'
 import { getPageMap } from 'nextra/page-map'
-import Image from 'next/image'
 import 'nextra-theme-docs/style.css'
  
 export const metadata = {
@@ -10,7 +8,6 @@ export const metadata = {
   // For more information on metadata API, see: https://nextjs.org/docs/app/building-your-application/optimizing/metadata
 }
  
-const banner = <Banner storageKey="some-key">Nextra 4.0 is released 🎉</Banner>
 const navbar = (
   <Navbar
     logo={<b>Web3 Developer Docs by TBC</b>}
@@ -39,7 +36,6 @@ export default async function RootLayout({ children }: { children: React.ReactNo
       </Head>
       <body>
         <Layout
-          // banner={banner}
           navbar={navbar}
           pageMap={await getPageMap()}
           docsRepositoryBase="https://github.com/TUM-Blockchain-Club/Web3-developer-Docs"
