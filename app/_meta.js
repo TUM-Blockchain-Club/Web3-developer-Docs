@@ -1,6 +1,8 @@
 /* eslint-disable */
 export default {
     //"introduction": "Introduction",
+    "about": "About",
+    "get_started": "Getting Started",
     "---": {
         type: "separator",
     },

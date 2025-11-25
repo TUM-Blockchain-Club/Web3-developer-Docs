@@ -9,13 +9,20 @@ export const metadata = {
 }
  
 const navbar = (
-  <Navbar
-    logo={<b>Web3 Developer Docs by TBC</b>}
-    logoLink="https://www.tum-blockchain.com/"
-    projectLink="https://github.com/TUM-Blockchain-Club/Web3-developer-Docs"
-
-    // ... Your additional navbar options
-  />
+<Navbar
+  logo={
+    <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+      <img
+        src="/tum_blockchain_club_logo.png"
+        alt="TUM Blockchain Club"
+        style={{ height: "28px" }}
+      />
+      <b>TUM Blockchain Club</b>
+    </div>
+  }
+  logoLink="https://www.tum-blockchain.com/"
+  projectLink="https://github.com/TUM-Blockchain-Club/Web3-developer-Docs"
+/>
 )
 const footer = <Footer>MIT {new Date().getFullYear()} © TUM Blockchain Club.</Footer>
  
