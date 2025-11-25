@@ -1,7 +1,9 @@
 {
   "index": "Introduction",
+  "first-steps": "First Steps: Create a Wallet",
   "another": "Another Page",
   "advanced": "Advanced (A Folder)",
+  "first-website": "Create Your First Website",
   "about": {
     "title": "About",
     "type": "page"
