@@ -17,7 +17,7 @@ const navbar = (
         alt="TUM Blockchain Club"
         style={{ height: "28px" }}
       />
-      <b>TUM Blockchain Club</b>
+      <b>TUM Blockchain Club - Dev Docs</b>
     </div>
   }
   logoLink="https://www.tum-blockchain.com/"
