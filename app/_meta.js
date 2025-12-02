@@ -1,15 +1,20 @@
 /* eslint-disable */
 export default {
-    //"introduction": "Introduction",
     "about": "About",
     "get_started": "Getting Started",
-    "---": {
+    "suggested-schedule": "Suggested Schedule",
+    "basics": "Basics",
+    "hackathon": "Hackathon",
+    "production-software": "Production Software",
+    "web3": "Web3",
+    "future": "Future",
+    /*"---": {
         type: "separator",
     },
-    "creating-your-first-wallet": "First Steps: Creating Your First Wallet",
-    "creating-your-first-web3-website": "Building Your First Web3 Website",
+    "###": {
+        type: "separator",
+    },*/
     "###": {
         type: "separator",
     },
-    "developer-resources": "Developer Resources",
 } 
