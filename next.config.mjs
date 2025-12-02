@@ -14,7 +14,7 @@ export default withNextra({
     return [
       {
         source: '/',
-        destination: '/creating-your-first-wallet',
+        destination: '/about',
         permanent: false,
       },
     ]
