@@ -1,3 +1,3 @@
 export default {
-  "account-abstraction": "Account Abstraction"
+  "account-abstraction": "🤖 Account Abstraction"
 }
