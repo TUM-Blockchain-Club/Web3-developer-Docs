@@ -1,1 +1,28 @@
 # 🔒 Environment Variables
+
+Environment variables are used to store **configuration and secrets** outside of your source code. They allow you to change behavior between development, testing, and production **without modifying the code itself**.
+
+In Web3 projects, environment variables are **critical for security**.
+
+---
+
+## Why environment variables matter in Web3
+
+Most blockchain applications rely on sensitive values such as:
+
+- RPC endpoints (Infura, Alchemy, QuickNode, Helius)
+- Private keys / signer keys
+- API keys (indexers, explorers, price feeds)
+- Contract addresses that differ per network
+
+Hard-coding these values into your codebase is **dangerous** and often leads to **fund loss** or **key leaks**.
+
+---
+
+## Common examples
+
+```env
+RPC_URL=https://mainnet.infura.io/v3/XXXX
+PRIVATE_KEY=0xabc123...
+ALCHEMY_API_KEY=your_key_here
+NEXT_PUBLIC_CHAIN=solana
