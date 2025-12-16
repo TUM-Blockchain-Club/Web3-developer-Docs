@@ -1,5 +1,5 @@
 export default {
-  "vercel-deployment": "▲ Vercel Deployment",
+  "winning-idea": "🏆 Winning Idea",
   "supabase": "🐘 Supabase",
   "docker": "🐳 Docker",
   "basic-server": "🖥️ Basic Server Setup"

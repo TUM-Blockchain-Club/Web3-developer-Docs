@@ -8,5 +8,6 @@ export default {
   "oracles": "🔮 Oracles",
   "dapp": "📱 DApp",
   "multisig-wallets": "✍️ Multi-Signature Wallets",
-  "proxy-contracts": "📜 Proxy Contracts"
+  "proxy-contracts": "📜 Proxy Contracts",
+  "faucets": "💰 Faucets",
 }

@@ -4,7 +4,7 @@ export default {
     "get_started": "🚀 Getting Started",
     "suggested-schedule": "🗓️ Suggested Schedule",
     "basics": "📝 Basics",
-    "hackathon": "🏆 Hackathon",
+    "hackathon": "💻 Hackathon",
     "production-software": "🛠️ Production Software",
     "web3": "🌐 Web3",
     "future": "🔮 Future",
