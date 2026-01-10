@@ -1,0 +1,158 @@
+---
+title: MetaMask & Wallet Fundamentals
+description: A beginner-friendly guide to wallets, keys, gas, and DeFi basics.
+---
+
+# 🦊 MetaMask & Wallet Fundamentals
+
+*A practical introduction to how wallets, keys, gas, and DeFi actually work.*
+
+---
+
+## 🤔 What Is a Wallet? (It’s not what you think)
+
+### ❌ MetaMask is NOT
+- A place where your money is stored
+- A bank
+- A blockchain
+
+### ✅ MetaMask IS
+- 🔐 **Key manager** – securely stores your private keys (encrypted)
+- 🌐 **RPC client** – talks to blockchains via `window.ethereum`
+- ✍️ **Signer** – cryptographically signs transactions and messages
+
+> **Key takeaway:**  
+> The blockchain is the database.  
+> MetaMask is just the communicator.  
+> If MetaMask disappears, your account still exists.
+
+---
+
+## 🔑 Public vs. Private Keys
+
+- **Private Key** 🔒  
+  - Proves ownership  
+  - Never share (outside dev/test scenarios)
+
+- **Public Key** 🔓  
+  - Derived from the private key
+
+- **Address** 📬  
+  - Hash of the public key  
+  - Safe to share  
+  - Used to receive funds
+
+⚠️ Blockchain transactions are **final**.  
+There is no undo button.
+
+---
+
+## 🌱 Seed Phrases (BIP-39)
+
+### 🧮 The math
+- 12 words = representation of massive entropy
+- Based on a fixed list of **2048 words**
+- Total combinations: **~5.4 × 10³⁹**
+
+### 🌳 The hierarchy
+Seed Phrase → Private Keys → Public Keys → Addresses
+
+### 🚨 The danger
+- One seed controls **all derived accounts**
+- Leaking the seed = total loss
+- Wallet passwords only protect **locally**, not on-chain
+
+> Whoever has the seed **is you**.
+
+---
+
+## ⛽ Gas = Compute Credits
+
+You cannot write to the blockchain for free.
+
+### The formula
+Transaction Fee = Gas Used × Gas Price
+### Key concepts
+- **Gas** → amount of computation
+- **Gas limit** → max you’re willing to pay
+- **Gas price (Gwei)** → priority in the network
+- **Nonce** → your personal transaction counter  
+  (prevents replay attacks)
+
+Higher gas price = faster inclusion ⏩
+
+---
+
+## 🔍 Reading the Blockchain (Etherscan)
+
+- The blockchain is a **public database**
+- Anyone can inspect:
+  - Transactions
+  - Balances
+  - Contract interactions
+- Tools like **Etherscan** are just explorers — not special permissions
+
+> Sending crypto = writing to the database  
+> Reading Etherscan = reading the database
+
+---
+
+## 🔁 What Is Uniswap?
+
+### 🧠 As a protocol
+- Smart contracts deployed on Ethereum
+- Runs autonomously (no servers, no company)
+- Can be used without a website
+
+### 🖥️ As a dApp
+- Website = graphical interface
+- Generates complex transactions for you
+- Your wallet signs and submits them
+
+> The frontend is optional.  
+> The smart contracts are the real product.
+
+---
+
+## ✅ The “Approval” Pattern (Very Important)
+
+### The problem
+Smart contracts cannot move your tokens automatically.
+
+### The solution (ERC-20 standard)
+1. **Approve**  
+   > “I allow Uniswap to spend 100 USDC”
+2. **TransferFrom**  
+   > “Uniswap takes the USDC and gives ETH”
+
+### ETH vs Tokens
+- **ETH** → native currency (no approval needed)
+- **ERC-20 tokens** → separate contracts (approval required)
+
+⚠️ Token → ETH swaps always need approval first.
+
+---
+
+## 🏠 To-Do (Recommended Practice)
+
+- Swap ETH → USDC on Uniswap
+- Supply USDC as collateral
+- Borrow DAI
+- Research:
+  - Lending protocols (Aave)
+  - Health factor
+  - Liquidation risk
+
+---
+
+## 🧠 Final Takeaways
+
+- Wallets manage **keys**, not money
+- Seed phrases are absolute power
+- Gas is payment for computation
+- dApps = frontend + smart contracts
+- Approvals are fundamental to DeFi
+
+---
+
+**Understand this once — avoid costly mistakes forever. 🛡️**

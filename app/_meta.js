@@ -8,6 +8,7 @@ export default {
     "production-software": "🛠️ Production Software",
     "web3": "🌐 Web3",
     "future": "🔮 Future",
+    "weekly-presentations": "🎤 Weekly presentations",
     /*"---": {
         type: "separator",
     },
@@ -17,4 +18,5 @@ export default {
     "###": {
         type: "separator",
     },
+
 } 
