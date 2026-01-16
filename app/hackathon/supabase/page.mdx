@@ -1,1 +1,344 @@
 # 🐘 Supabase
+
+**The fastest way to add a backend to your hackathon project.**
+
+Supabase is an open-source Firebase alternative built on PostgreSQL. Perfect for hackathons because it gives you **auth, database, and realtime** in minutes, not hours.
+
+---
+
+## 🎯 Why Supabase for Hackathons?
+
+### ❌ Don't Use
+- ❌ CSV/JSON files → No auth, no concurrency
+- ❌ Building your own auth → Hours wasted
+- ❌ Managing a database server → Maintenance nightmare
+
+### ✅ Do Use Supabase
+- ✅ **Free tier** (perfect for hackathons)
+- ✅ **Auth in 5 minutes** (email, OAuth, Web3)
+- ✅ **Real PostgreSQL** (not MongoDB, actual SQL)
+- ✅ **Realtime subscriptions** (chat, notifications, live data)
+- ✅ **Zero maintenance** (hosted, auto-scales)
+- ✅ **Team-ready** (shared dashboard, easy collaboration)
+
+> 💡 **Pro tip:** Judges love seeing real authentication and data persistence. It shows you built a *product*, not just a demo.
+
+---
+
+## 🚀 Quick Start (5 Minutes)
+
+### 1. Create a Project
+
+1. Go to https://supabase.com
+2. Sign up (GitHub OAuth works)
+3. Click **"New Project"**
+4. Choose a name and database password (save it!)
+5. Wait 2 minutes for provisioning
+
+### 2. Get Your Credentials
+
+In your project dashboard:
+
+```bash
+# Project Settings → API
+SUPABASE_URL=https://xxxxx.supabase.co
+SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+SUPABASE_SERVICE_ROLE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9... # Keep secret!
+```
+
+### 3. Install Client
+
+```bash
+npm install @supabase/supabase-js
+```
+
+---
+
+## 💻 Code Examples
+
+### Client Setup (Next.js / React)
+
+```typescript
+// lib/supabase.ts
+import { createClient } from '@supabase/supabase-js'
+
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
+const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+
+export const supabase = createClient(supabaseUrl, supabaseAnonKey)
+```
+
+### Authentication
+
+```typescript
+// Sign up
+const { data, error } = await supabase.auth.signUp({
+  email: 'user@example.com',
+  password: 'secure-password'
+})
+
+// Sign in
+const { data, error } = await supabase.auth.signInWithPassword({
+  email: 'user@example.com',
+  password: 'secure-password'
+})
+
+// Sign out
+await supabase.auth.signOut()
+
+// Get current user
+const { data: { user } } = await supabase.auth.getUser()
+
+// Listen to auth changes
+supabase.auth.onAuthStateChange((event, session) => {
+  console.log(event, session)
+})
+```
+
+### Web3 Wallet Authentication
+
+```typescript
+// Connect wallet (MetaMask, WalletConnect, etc.)
+const { address } = await window.ethereum.request({ 
+  method: 'eth_requestAccounts' 
+})
+
+// Sign a message
+const message = `Sign in to MyApp: ${Date.now()}`
+const signature = await window.ethereum.request({
+  method: 'personal_sign',
+  params: [message, address]
+})
+
+// Verify signature and create user (you'll need a backend function)
+// Or use a library like @moralisweb3/next or SIWE (Sign-In with Ethereum)
+```
+
+### Database Operations
+
+```typescript
+// Create a table (in Supabase Dashboard → SQL Editor)
+// CREATE TABLE profiles (
+//   id UUID REFERENCES auth.users PRIMARY KEY,
+//   wallet_address TEXT,
+//   created_at TIMESTAMP DEFAULT NOW()
+// );
+
+// Insert data
+const { data, error } = await supabase
+  .from('profiles')
+  .insert({ 
+    id: user.id,
+    wallet_address: address 
+  })
+
+// Read data
+const { data, error } = await supabase
+  .from('profiles')
+  .select('*')
+  .eq('wallet_address', address)
+  .single()
+
+// Update data
+const { data, error } = await supabase
+  .from('profiles')
+  .update({ wallet_address: newAddress })
+  .eq('id', user.id)
+
+// Delete data
+const { error } = await supabase
+  .from('profiles')
+  .delete()
+  .eq('id', user.id)
+```
+
+### Realtime Subscriptions
+
+```typescript
+// Subscribe to changes
+const channel = supabase
+  .channel('profiles')
+  .on('postgres_changes', {
+    event: '*', // 'INSERT', 'UPDATE', 'DELETE'
+    schema: 'public',
+    table: 'profiles'
+  }, (payload) => {
+    console.log('Change received!', payload)
+  })
+  .subscribe()
+
+// Unsubscribe
+channel.unsubscribe()
+```
+
+### Row Level Security (RLS)
+
+Enable RLS in Supabase Dashboard → Table Editor → Enable RLS
+
+```sql
+-- Allow users to read their own profile
+CREATE POLICY "Users can read own profile"
+ON profiles FOR SELECT
+USING (auth.uid() = id);
+
+-- Allow users to update their own profile
+CREATE POLICY "Users can update own profile"
+ON profiles FOR UPDATE
+USING (auth.uid() = id);
+```
+
+---
+
+## 🗄️ Database Setup
+
+### Via Dashboard (Easiest)
+
+1. Go to **Table Editor**
+2. Click **"New Table"**
+3. Name it (e.g., `profiles`)
+4. Add columns:
+   - `id` (uuid, primary key, default: `gen_random_uuid()`)
+   - `user_id` (uuid, foreign key → auth.users)
+   - `wallet_address` (text)
+   - `created_at` (timestamp, default: `now()`)
+5. Click **"Save"**
+
+### Via SQL Editor (For Power Users)
+
+```sql
+-- Create profiles table
+CREATE TABLE profiles (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID REFERENCES auth.users(id) ON DELETE CASCADE,
+  wallet_address TEXT,
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+-- Enable RLS
+ALTER TABLE profiles ENABLE ROW LEVEL SECURITY;
+
+-- Policy: Users can read own profile
+CREATE POLICY "Users can read own profile"
+ON profiles FOR SELECT
+USING (auth.uid() = user_id);
+
+-- Policy: Users can insert own profile
+CREATE POLICY "Users can insert own profile"
+ON profiles FOR INSERT
+WITH CHECK (auth.uid() = user_id);
+```
+
+---
+
+## 🔐 Environment Variables
+
+Add to your `.env`:
+
+```env
+NEXT_PUBLIC_SUPABASE_URL=https://xxxxx.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+SUPABASE_SERVICE_ROLE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9... # Server-side only!
+```
+
+> ⚠️ **Never expose `SERVICE_ROLE_KEY` to the client!** It bypasses RLS.
+
+---
+
+## 🎨 Common Patterns
+
+### User Profile on Sign Up
+
+```typescript
+// When user signs up, create their profile
+supabase.auth.onAuthStateChange(async (event, session) => {
+  if (event === 'SIGNED_UP' && session?.user) {
+    await supabase
+      .from('profiles')
+      .insert({
+        user_id: session.user.id,
+        wallet_address: null, // User can add later
+      })
+  }
+})
+```
+
+### Protected Route (Next.js)
+
+```typescript
+// middleware.ts
+import { createMiddlewareClient } from '@supabase/auth-helpers-nextjs'
+import { NextResponse } from 'next/server'
+
+export async function middleware(req: NextRequest) {
+  const res = NextResponse.next()
+  const supabase = createMiddlewareClient({ req, res })
+  const { data: { session } } = await supabase.auth.getSession()
+
+  if (!session && req.nextUrl.pathname.startsWith('/dashboard')) {
+    return NextResponse.redirect(new URL('/login', req.url))
+  }
+
+  return res
+}
+```
+
+### Server-Side API Route
+
+```typescript
+// app/api/profiles/route.ts
+import { createClient } from '@supabase/supabase-js'
+import { cookies } from 'next/headers'
+
+export async function GET() {
+  const cookieStore = cookies()
+  const supabase = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        get(name: string) {
+          return cookieStore.get(name)?.value
+        },
+      },
+    }
+  )
+
+  const { data: { user } } = await supabase.auth.getUser()
+  
+  if (!user) {
+    return Response.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+
+  const { data } = await supabase
+    .from('profiles')
+    .select('*')
+    .eq('user_id', user.id)
+    .single()
+
+  return Response.json(data)
+}
+```
+
+---
+
+## 📚 Resources & Docs
+
+- 📖 **Official Docs:** https://supabase.com/docs
+- 🔐 **Auth Guide:** https://supabase.com/docs/guides/auth
+- 🗄️ **Database Guide:** https://supabase.com/docs/guides/database
+- ⚡ **Realtime Guide:** https://supabase.com/docs/guides/realtime
+- 🎨 **Templates:** https://supabase.com/templates
+
+---
+
+## 🚀 Deploy Tips
+
+- ✅ **Use the free tier** (50,000 monthly active users)
+- ✅ **Enable RLS** on all tables (security first!)
+- ✅ **Use environment variables** (never hardcode keys)
+- ✅ **Test locally** with Supabase CLI if needed
+- ✅ **Backup important data** before demo (optional, but safe)
+
+---
+
+**Remember:** Supabase is your backend-in-a-box. Focus on your Web3 features, not server management. 🚀

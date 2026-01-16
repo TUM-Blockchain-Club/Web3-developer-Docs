@@ -1,0 +1,282 @@
+# 🛠️ Hardhat & Web3 Dev Setup  
+**From User → Builder**
+
+> This session is about learning how *real* Web3 developers work.  
+> Not clicking buttons. Writing code that deploys to blockchains.
+
+---
+
+## 📚 Essential Resources
+
+- 📄 **Smart Contract Framework:** https://hardhat.org/getting-started/
+- 🐙 **Git Helper:** https://www.toptal.com/developers/gitignore
+- 🔐 **Secrets Management:** https://www.npmjs.com/package/dotenv
+
+---
+
+## 🧠 Theory & Core Concepts
+
+Before touching code, you must understand **what you are actually doing**.
+
+---
+
+### 1️⃣ What is Hardhat?
+
+Hardhat is a **professional Ethereum development environment**.
+
+**Why not Remix?**
+- Remix is great for demos.
+- It is *not* how production engineers work.
+
+**Hardhat gives you:**
+- 🔨 **Compilation**
+  - Solidity → **Bytecode** (EVM instructions)
+  - Solidity → **ABI** (frontend communication map)
+- 🧪 **Testing**
+  - Local blockchains that reset instantly
+- 🤖 **Scripting**
+  - Automated deployments & interactions using JS/TS
+
+> Think of Hardhat as the **VS Code + Docker + CI** of Web3.
+
+---
+
+### 2️⃣ Secrets Management (`.env`) – *Do Not Get Hacked*
+
+> 📖 **Learn more:** For a detailed guide on environment variables, see [Environment Variables](/basics/environment-variables)
+
+**Golden Rule:**  
+🚨 **Never commit private keys or API keys to GitHub. Ever.**
+
+**Why?**
+- Bots scan *every* GitHub commit globally.
+- Leaked key = wallet drained in seconds.
+
+**How `.env` works:**
+- Local file with secrets
+- Loaded at runtime into memory
+- Ignored by Git
+
+**Analogy:**
+- Code = car  
+- `.env` = key  
+- You publish the car, **not the key**
+
+---
+
+### 3️⃣ Artifacts – What Are We Deploying?
+
+When Hardhat compiles, it creates an `artifacts/` folder.
+
+It contains:
+- 🧾 **Bytecode**  
+  - The actual hex code stored on-chain (`0x608060...`)
+- 🗺️ **ABI (Application Binary Interface)**  
+  - JSON description of how to interact with the contract  
+  - Used by frontends and scripts
+
+> ABI = instruction manual  
+> Bytecode = machine
+
+---
+
+### 4️⃣ RPC Nodes – Your Gateway to the Blockchain
+
+Your laptop is **not** a blockchain node.
+
+To interact with Ethereum, you need an **RPC Provider**:
+- Alchemy
+- Infura
+- Google Cloud Web3
+
+**Flow:**  
+Hardhat → RPC Provider → Ethereum Network
+
+---
+
+## 🎯 What You Should Gain From This Session
+
+### 🚀 From User to Developer
+- Metamask → user tool
+- Hardhat → builder tool
+
+### 🏗️ Professional Dev Setup
+- Node.js & npm
+- Secure key handling
+- Reproducible environments
+
+### 🧑‍💼 GitHub = Your CV
+- Web3 is open-source by default
+- Recruiters check:
+  - Commit history
+  - Repo structure
+  - Security awareness
+
+### 🌍 Blockchain "Hello World"
+- Local dev environment
+- Connect to Sepolia testnet
+- Deploy a real smart contract
+
+---
+
+## 🧪 Part 1: Project Initialization (10 min)
+
+### Prerequisite
+```bash
+node -v
+```
+
+### Setup
+```bash
+mkdir tum-web3-week2
+cd tum-web3-week2
+npm init -y
+npm install --save-dev hardhat
+npx hardhat init
+```
+
+**Choose:**
+- TypeScript (recommended)
+- Project root: yes
+- Gitignore: yes
+
+### Verify
+```bash
+npx hardhat test
+```
+
+---
+
+## 🐙 Part 2: Git & "The CV Builder" (10 min)
+
+### Initialize Git
+```bash
+git init
+git branch -M main
+```
+
+### `.gitignore` (CRITICAL)
+
+Ensure it includes:
+
+```
+.env
+node_modules
+coverage
+```
+
+> ⚠️ If `.env` is pushed → assume compromise.
+
+### First Commit
+```bash
+git add .
+git commit -m "feat: initial hardhat setup"
+```
+
+➡️ **Create a GitHub repo and push.**
+
+---
+
+## 🔐 Part 3: Environment Variables & Security (15 min)
+
+> 📖 **Reference:** For a comprehensive guide on environment variables in Web3, check out [Environment Variables](/basics/environment-variables)
+
+### Install dotenv
+```bash
+npm install dotenv
+```
+
+### Get Your Private Key
+
+1. Metamask → Account Details → Show Private Key
+
+> ⚠️ Use a throwaway / dev wallet only
+
+### Create `.env`
+```env
+SEPOLIA_RPC_URL="https://eth-sepolia.g.alchemy.com/v2/YOUR_API_KEY"
+PRIVATE_KEY="0x..."
+```
+
+---
+
+## ⚙️ Part 4: Hardhat Configuration (10 min)
+
+### Edit `hardhat.config.ts`:
+
+```typescript
+import * as dotenv from "dotenv";
+import { HardhatUserConfig } from "hardhat/config";
+import "@nomicfoundation/hardhat-toolbox";
+
+dotenv.config();
+
+const config: HardhatUserConfig = {
+  solidity: "0.8.24",
+  networks: {
+    sepolia: {
+      url: process.env.SEPOLIA_RPC_URL,
+      accounts: [process.env.PRIVATE_KEY || ""],
+    },
+  },
+};
+
+export default config;
+```
+
+### Test Connection
+```bash
+npx hardhat console --network sepolia
+```
+
+Inside console:
+
+```javascript
+await ethers.provider.getBlockNumber()
+```
+
+✔️ **If it returns a number → success.**
+
+---
+
+## 🚀 Part 5: First Deployment Script (15 min)
+
+### Script Logic
+
+1. Load contract factory
+2. Send deployment transaction
+3. Wait for confirmation
+
+### Run
+```bash
+npx hardhat run scripts/deploy.ts --network sepolia
+```
+
+### Verify on Etherscan
+
+1. Copy deployed address
+2. Open Sepolia Etherscan
+3. Paste address
+
+🎉 **You deployed a program to a global distributed network**
+
+---
+
+## ✅ Final Checklist
+
+- [ ] Hardhat project initialized
+- [ ] GitHub repo created & pushed
+- [ ] `.gitignore` includes `.env`
+- [ ] `.env` contains RPC + private key
+- [ ] Sepolia configured in Hardhat
+- [ ] Deployment script executed
+- [ ] Contract visible on Etherscan
+
+---
+
+## 🧠 Final Thought
+
+Web3 development is not about tokens.  
+It is about engineering discipline, security, and open source credibility.
+
+**Welcome to the builder side.** 🧱⚡

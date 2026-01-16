@@ -17,12 +17,430 @@ Most blockchain applications rely on sensitive values such as:
 
 Hard-coding these values into your codebase is **dangerous** and often leads to **fund loss** or **key leaks**.
 
+> 🚨 **Golden Rule:** Never commit private keys or API keys to GitHub. Ever. Bots scan every commit globally, and leaked keys = drained wallets in seconds.
+
 ---
 
-## Common examples
+## 📚 Essential Resources & Tutorials
+
+- 📖 **Official dotenv docs:** https://www.npmjs.com/package/dotenv
+- 🔐 **12-Factor App (Config):** https://12factor.net/config
+- 🛡️ **OWASP Secrets Management:** https://cheatsheetseries.owasp.org/cheatsheets/Secrets_Management_Cheat_Sheet.html
+- 🔍 **GitHub Secret Scanning:** https://docs.github.com/en/code-security/secret-scanning
+- 📝 **Environment Variables Best Practices:** https://www.twilio.com/blog/environment-variables-python
+
+---
+
+## 🚀 Quick Setup
+
+### Install dotenv
+
+```bash
+npm install dotenv
+```
+
+### Create `.env` file
+
+Create a `.env` file in your project root:
 
 ```env
-RPC_URL=https://mainnet.infura.io/v3/XXXX
-PRIVATE_KEY=0xabc123...
-ALCHEMY_API_KEY=your_key_here
-NEXT_PUBLIC_CHAIN=solana
+# RPC Provider URLs
+SEPOLIA_RPC_URL=https://eth-sepolia.g.alchemy.com/v2/YOUR_API_KEY
+MAINNET_RPC_URL=https://mainnet.infura.io/v3/YOUR_API_KEY
+
+# Private Keys (use dev/test wallets only!)
+PRIVATE_KEY=0xabc123def456...
+
+# API Keys
+ALCHEMY_API_KEY=your_alchemy_key
+ETHERSCAN_API_KEY=your_etherscan_key
+
+# Network Configuration
+CHAIN_ID=11155111
+NETWORK_NAME=sepolia
+
+# Contract Addresses (optional, for reusing deployed contracts)
+CONTRACT_ADDRESS=0x1234...
+```
+
+### Ensure `.env` is in `.gitignore`
+
+```gitignore
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# Dependencies
+node_modules/
+
+# Build outputs
+dist/
+build/
+coverage/
+```
+
+---
+
+## 💻 Code Examples
+
+### Hardhat Configuration
+
+```typescript
+// hardhat.config.ts
+import * as dotenv from "dotenv";
+import { HardhatUserConfig } from "hardhat/config";
+import "@nomicfoundation/hardhat-toolbox";
+
+// Load environment variables
+dotenv.config();
+
+// Validate required environment variables
+if (!process.env.PRIVATE_KEY) {
+  throw new Error("Please set PRIVATE_KEY in your .env file");
+}
+
+if (!process.env.SEPOLIA_RPC_URL) {
+  throw new Error("Please set SEPOLIA_RPC_URL in your .env file");
+}
+
+const config: HardhatUserConfig = {
+  solidity: "0.8.24",
+  networks: {
+    hardhat: {
+      chainId: 1337,
+    },
+    sepolia: {
+      url: process.env.SEPOLIA_RPC_URL,
+      accounts: process.env.PRIVATE_KEY ? [process.env.PRIVATE_KEY] : [],
+      chainId: 11155111,
+    },
+    mainnet: {
+      url: process.env.MAINNET_RPC_URL || "",
+      accounts: process.env.PRIVATE_KEY ? [process.env.PRIVATE_KEY] : [],
+      chainId: 1,
+    },
+  },
+  etherscan: {
+    apiKey: process.env.ETHERSCAN_API_KEY,
+  },
+};
+
+export default config;
+```
+
+### Next.js / React Frontend
+
+```typescript
+// next.config.js or next.config.mjs
+/** @type {import('next').NextConfig} */
+const nextConfig = {
+  env: {
+    // Only expose PUBLIC variables to the browser
+    NEXT_PUBLIC_CHAIN_ID: process.env.CHAIN_ID,
+    NEXT_PUBLIC_CONTRACT_ADDRESS: process.env.NEXT_PUBLIC_CONTRACT_ADDRESS,
+    // These stay server-side only
+    // PRIVATE_KEY is NOT exposed
+  },
+};
+
+module.exports = nextConfig;
+```
+
+```typescript
+// lib/config.ts
+// Server-side config (never exposed to browser)
+export const serverConfig = {
+  privateKey: process.env.PRIVATE_KEY || "",
+  rpcUrl: process.env.SEPOLIA_RPC_URL || "",
+  etherscanApiKey: process.env.ETHERSCAN_API_KEY || "",
+};
+
+// Client-side config (exposed via NEXT_PUBLIC_ prefix)
+export const clientConfig = {
+  chainId: process.env.NEXT_PUBLIC_CHAIN_ID || "11155111",
+  contractAddress: process.env.NEXT_PUBLIC_CONTRACT_ADDRESS || "",
+};
+```
+
+### Node.js Script Example
+
+```typescript
+// scripts/deploy.ts
+import { ethers } from "hardhat";
+import * as dotenv from "dotenv";
+
+dotenv.config();
+
+async function main() {
+  // Access environment variables
+  const contractName = process.env.CONTRACT_NAME || "MyContract";
+  const constructorArgs = process.env.CONSTRUCTOR_ARGS
+    ? JSON.parse(process.env.CONSTRUCTOR_ARGS)
+    : [];
+
+  console.log(`Deploying ${contractName}...`);
+
+  const Contract = await ethers.getContractFactory(contractName);
+  const contract = await Contract.deploy(...constructorArgs);
+
+  await contract.waitForDeployment();
+  const address = await contract.getAddress();
+
+  console.log(`${contractName} deployed to: ${address}`);
+  console.log(`Update your .env: CONTRACT_ADDRESS=${address}`);
+}
+
+main()
+  .then(() => process.exit(0))
+  .catch((error) => {
+    console.error(error);
+    process.exit(1);
+  });
+```
+
+### Environment Variable Validation
+
+```typescript
+// utils/env.ts
+import * as dotenv from "dotenv";
+
+dotenv.config();
+
+interface EnvConfig {
+  PRIVATE_KEY: string;
+  SEPOLIA_RPC_URL: string;
+  ETHERSCAN_API_KEY?: string;
+}
+
+function validateEnv(): EnvConfig {
+  const required = ["PRIVATE_KEY", "SEPOLIA_RPC_URL"];
+  const missing = required.filter((key) => !process.env[key]);
+
+  if (missing.length > 0) {
+    throw new Error(
+      `Missing required environment variables: ${missing.join(", ")}`
+    );
+  }
+
+  // Validate private key format
+  if (!process.env.PRIVATE_KEY?.startsWith("0x")) {
+    throw new Error("PRIVATE_KEY must start with 0x");
+  }
+
+  if (process.env.PRIVATE_KEY.length !== 66) {
+    throw new Error("PRIVATE_KEY must be 66 characters (0x + 64 hex chars)");
+  }
+
+  return {
+    PRIVATE_KEY: process.env.PRIVATE_KEY,
+    SEPOLIA_RPC_URL: process.env.SEPOLIA_RPC_URL,
+    ETHERSCAN_API_KEY: process.env.ETHERSCAN_API_KEY,
+  };
+}
+
+export const env = validateEnv();
+```
+
+---
+
+## 📋 `.env.example` Template
+
+Always commit a `.env.example` file (without real values) so others know what variables are needed:
+
+```env
+# .env.example
+
+# ============================================
+# RPC PROVIDER URLs
+# ============================================
+# Get your API key from: https://www.alchemy.com/ or https://www.infura.io/
+SEPOLIA_RPC_URL=https://eth-sepolia.g.alchemy.com/v2/YOUR_API_KEY
+MAINNET_RPC_URL=https://mainnet.infura.io/v3/YOUR_API_KEY
+
+# ============================================
+# WALLET CONFIGURATION
+# ============================================
+# ⚠️ WARNING: Use a dev/test wallet only!
+# Never use a wallet with real funds for development
+PRIVATE_KEY=0x0000000000000000000000000000000000000000000000000000000000000000
+
+# ============================================
+# API KEYS
+# ============================================
+# Get your API key from: https://etherscan.io/apis
+ETHERSCAN_API_KEY=your_etherscan_api_key_here
+ALCHEMY_API_KEY=your_alchemy_api_key_here
+
+# ============================================
+# NETWORK CONFIGURATION
+# ============================================
+CHAIN_ID=11155111
+NETWORK_NAME=sepolia
+
+# ============================================
+# DEPLOYED CONTRACT ADDRESSES (Optional)
+# ============================================
+CONTRACT_ADDRESS=
+```
+
+---
+
+## 🛡️ Best Practices
+
+### ✅ Do
+
+- ✅ **Use `.env.example`** - Show required variables without exposing secrets
+- ✅ **Validate on startup** - Check all required variables exist
+- ✅ **Use separate wallets** - Dev/test wallet ≠ production wallet
+- ✅ **Rotate keys regularly** - Especially if compromised
+- ✅ **Use TypeScript** - Type your environment variables
+- ✅ **Document variables** - Add comments explaining what each variable does
+- ✅ **Use different `.env` files** - `.env.local`, `.env.production`, etc.
+
+### ❌ Don't
+
+- ❌ **Never commit `.env`** - Add to `.gitignore` immediately
+- ❌ **Never log secrets** - Don't `console.log(process.env.PRIVATE_KEY)`
+- ❌ **Never expose in frontend** - Don't put secrets in `NEXT_PUBLIC_*` variables
+- ❌ **Never share screenshots** - Never share terminal output with secrets
+- ❌ **Never use production keys in dev** - Use separate API keys for each environment
+
+---
+
+## 🚨 EMERGENCY: What to Do If You Leaked Secrets on GitHub
+
+### ⏱️ Immediate Actions (First 5 Minutes)
+
+1. **🚨 STOP THE BLEEDING**
+   ```bash
+   # Revoke API keys immediately
+   # - Alchemy: Go to dashboard → Revoke API key
+   # - Infura: Go to dashboard → Revoke API key
+   # - Etherscan: Regenerate API key
+   ```
+
+2. **💰 MOVE FUNDS IMMEDIATELY**
+   - If you leaked a **private key**, move ALL funds from that wallet **RIGHT NOW**
+   - Create a new wallet
+   - Transfer everything to the new wallet
+   - **Do not wait** - bots monitor GitHub 24/7
+
+3. **🔐 REGENERATE ALL SECRETS**
+   - All API keys that were exposed
+   - All private keys (and move funds first!)
+   - All passwords/tokens
+
+### 🧹 Clean Up GitHub History (First Hour)
+
+> ⚠️ **Warning:** Removing secrets from Git history is complex. Once committed, assume they are compromised.
+
+**Option 1: If the repo is new/private and you haven't pushed much:**
+```bash
+# Delete the repo and recreate it (easiest)
+# GitHub → Settings → Delete this repository
+```
+
+**Option 2: Remove secrets from Git history (advanced):**
+```bash
+# Use git-filter-repo (recommended)
+git filter-repo --path .env --invert-paths
+
+# Force push (⚠️ Coordinate with team first!)
+git push origin --force --all
+```
+
+**Option 3: Use BFG Repo-Cleaner:**
+```bash
+# Install BFG
+brew install bfg  # or download from https://rtyley.github.io/bfg-repo-cleaner/
+
+# Remove .env file from history
+bfg --delete-files .env
+
+# Clean up
+git reflog expire --expire=now --all
+git gc --prune=now --aggressive
+```
+
+### 📝 Check What Was Exposed
+
+```bash
+# Search your Git history for exposed secrets
+git log --all --full-history --source -- .env
+
+# Check what was committed
+git show <commit-hash>:.env
+```
+
+### 🔍 Verify Secrets Are Removed
+
+1. **Check GitHub's Secret Scanning:**
+   - GitHub automatically scans for exposed secrets
+   - Check: Repository → Security → Secret scanning alerts
+
+2. **Manual search:**
+   - Search your repo for the exposed key/secret
+   - Use GitHub's search: `repo:yourusername/yourrepo "exposed_key"`
+
+3. **Check Git history:**
+   ```bash
+   # Verify .env is no longer in history
+   git log --all --full-history -- .env
+   # Should return nothing if successfully removed
+   ```
+
+### 📚 Prevention Checklist
+
+- [ ] `.env` is in `.gitignore`
+- [ ] `.env.example` is committed (template only)
+- [ ] Pre-commit hooks installed (prevent accidental commits)
+- [ ] GitHub secret scanning enabled
+- [ ] Team is trained on security practices
+- [ ] Using separate dev/test API keys
+- [ ] Regular security audits of commits
+
+### 🛠️ Tools to Prevent Future Leaks
+
+1. **git-secrets** (AWS)
+   ```bash
+   git secrets --install
+   git secrets --register-aws
+   ```
+
+2. **trufflehog** (Scan for secrets)
+   ```bash
+   # Scan your repo
+   trufflehog git file://. --json
+   ```
+
+3. **pre-commit hooks**
+   ```yaml
+   # .pre-commit-config.yaml
+   repos:
+     - repo: https://github.com/Yelp/detect-secrets
+       rev: v1.4.0
+       hooks:
+         - id: detect-secrets
+   ```
+
+---
+
+## 🔗 Related Topics
+
+- 📖 [Hardhat Setup Guide](/weekly-presentations/subpage-3) - Complete Hardhat environment setup
+- 🔐 [Git Basics](/basics/git) - Version control best practices
+- 🛡️ [Smart Contract Security](/web3/smart-contract-security) - Security best practices
+
+---
+
+## 📖 Further Reading
+
+- [The Twelve-Factor App: Config](https://12factor.net/config)
+- [OWASP Secrets Management Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Secrets_Management_Cheat_Sheet.html)
+- [GitHub: Removing sensitive data from a repository](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/removing-sensitive-data-from-a-repository)
+- [GitGuardian: Secrets Detection](https://www.gitguardian.com/)
+
+---
+
+**Remember:** In Web3, security isn't optional. One leaked key can drain your entire wallet. Always err on the side of caution. 🔒

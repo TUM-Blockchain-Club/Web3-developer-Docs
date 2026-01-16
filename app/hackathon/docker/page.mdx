@@ -1,1 +1,465 @@
 # 🐳 Docker
+
+**Containerize your hackathon project for consistent, portable deployments.**
+
+Docker packages your app and its dependencies into containers that run the same everywhere. Perfect for hackathons when you need to **deploy fast** and **avoid "works on my machine"** issues.
+
+---
+
+## 🎯 Why Docker for Hackathons?
+
+### ❌ Common Problems
+- ❌ "It works on my laptop but not on Railway/Render"
+- ❌ Environment differences between dev/prod
+- ❌ Dependency conflicts ("Node 18 vs 20")
+- ❌ Database connection issues
+- ❌ Time wasted debugging deployment issues
+
+### ✅ Docker Solves
+- ✅ **"Works on my machine" → Works everywhere**
+- ✅ **Consistent environments** (same OS, same dependencies)
+- ✅ **Easy deployment** (Railway, Render, Fly.io all support Docker)
+- ✅ **Isolated services** (frontend, backend, database in containers)
+- ✅ **One command to run everything** (`docker-compose up`)
+
+> 💡 **Pro tip:** Docker isn't just for production. Use it to ensure your entire team has identical dev environments.
+
+---
+
+## 🚀 Quick Start
+
+### Install Docker
+
+**macOS / Windows:**
+- Download [Docker Desktop](https://www.docker.com/products/docker-desktop)
+- Install and restart your computer
+
+**Linux:**
+```bash
+curl -fsSL https://get.docker.com -o get-docker.sh
+sh get-docker.sh
+```
+
+### Verify Installation
+
+```bash
+docker --version
+docker-compose --version
+```
+
+---
+
+## 💻 Dockerfile Examples
+
+### Node.js / Next.js App
+
+```dockerfile
+# Dockerfile
+FROM node:20-alpine AS base
+
+# Install dependencies only when needed
+FROM base AS deps
+WORKDIR /app
+COPY package.json package-lock.json* ./
+RUN npm ci
+
+# Rebuild the source code only when needed
+FROM base AS builder
+WORKDIR /app
+COPY --from=deps /app/node_modules ./node_modules
+COPY . .
+RUN npm run build
+
+# Production image
+FROM base AS runner
+WORKDIR /app
+
+ENV NODE_ENV production
+
+RUN addgroup --system --gid 1001 nodejs
+RUN adduser --system --uid 1001 nextjs
+
+COPY --from=builder /app/public ./public
+COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
+COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
+
+USER nextjs
+
+EXPOSE 3000
+
+ENV PORT 3000
+ENV HOSTNAME "0.0.0.0"
+
+CMD ["node", "server.js"]
+```
+
+**Note:** For Next.js, enable standalone output in `next.config.js`:
+
+```javascript
+// next.config.js
+module.exports = {
+  output: 'standalone',
+}
+```
+
+### Python / FastAPI Backend
+
+```dockerfile
+# Dockerfile
+FROM python:3.11-slim
+
+WORKDIR /app
+
+# Install dependencies
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copy application
+COPY . .
+
+# Expose port
+EXPOSE 8000
+
+# Run application
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+```
+
+### Simple Node.js Server
+
+```dockerfile
+# Dockerfile
+FROM node:20-alpine
+
+WORKDIR /app
+
+# Copy package files
+COPY package*.json ./
+
+# Install dependencies
+RUN npm ci --only=production
+
+# Copy app files
+COPY . .
+
+# Expose port
+EXPOSE 3000
+
+# Run app
+CMD ["node", "server.js"]
+```
+
+---
+
+## 🐙 Docker Compose (Full Stack)
+
+Perfect for hackathons: run your entire stack with one command.
+
+```yaml
+# docker-compose.yml
+version: '3.8'
+
+services:
+  # Frontend (Next.js)
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - NEXT_PUBLIC_SUPABASE_URL=${SUPABASE_URL}
+      - NEXT_PUBLIC_SUPABASE_ANON_KEY=${SUPABASE_ANON_KEY}
+      - NEXT_PUBLIC_RPC_URL=${RPC_URL}
+    depends_on:
+      - backend
+
+  # Backend (Node.js API)
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=${DATABASE_URL}
+      - PRIVATE_KEY=${PRIVATE_KEY}
+      - RPC_URL=${RPC_URL}
+    env_file:
+      - .env
+
+  # Database (PostgreSQL)
+  postgres:
+    image: postgres:15-alpine
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=hackathon
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  # Redis (for caching/sessions)
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+
+volumes:
+  postgres_data:
+```
+
+### Running Docker Compose
+
+```bash
+# Start everything
+docker-compose up
+
+# Start in background
+docker-compose up -d
+
+# View logs
+docker-compose logs -f
+
+# Stop everything
+docker-compose down
+
+# Rebuild after changes
+docker-compose up --build
+```
+
+---
+
+## 🔐 Environment Variables with Docker
+
+### Option 1: `.env` file (Recommended)
+
+```bash
+# .env
+SUPABASE_URL=https://xxxxx.supabase.co
+PRIVATE_KEY=0xabc123...
+RPC_URL=https://eth-sepolia.g.alchemy.com/v2/...
+```
+
+Docker Compose automatically loads `.env`:
+
+```yaml
+services:
+  backend:
+    environment:
+      - PRIVATE_KEY=${PRIVATE_KEY}
+```
+
+### Option 2: Direct in docker-compose.yml
+
+```yaml
+services:
+  backend:
+    environment:
+      - PRIVATE_KEY=0xabc123...  # ⚠️ Not recommended for production
+```
+
+### Option 3: Docker secrets (Advanced)
+
+```bash
+echo "my-secret" | docker secret create private_key -
+```
+
+---
+
+## 🚢 Deploying Docker Containers
+
+### Railway
+
+1. Connect your GitHub repo
+2. Railway auto-detects Docker
+3. Add environment variables in dashboard
+4. Deploy!
+
+**Or use `railway.toml`:**
+
+```toml
+[build]
+builder = "DOCKERFILE"
+dockerfilePath = "Dockerfile"
+
+[deploy]
+startCommand = "node server.js"
+```
+
+### Render
+
+1. Create new **Web Service**
+2. Connect GitHub repo
+3. Set **Dockerfile path**
+4. Add environment variables
+5. Deploy!
+
+### Fly.io
+
+```bash
+# Install flyctl
+curl -L https://fly.io/install.sh | sh
+
+# Launch app
+fly launch
+
+# Deploy
+fly deploy
+```
+
+### Vercel (Docker support in beta)
+
+Currently, Vercel primarily supports serverless. For Docker containers, use Railway or Render.
+
+---
+
+## 🛠️ Common Commands
+
+```bash
+# Build an image
+docker build -t my-app .
+
+# Run a container
+docker run -p 3000:3000 my-app
+
+# Run with environment variables
+docker run -p 3000:3000 -e PRIVATE_KEY=0x123 my-app
+
+# List running containers
+docker ps
+
+# View logs
+docker logs <container-id>
+
+# Stop container
+docker stop <container-id>
+
+# Remove container
+docker rm <container-id>
+
+# Remove image
+docker rmi my-app
+
+# Clean up everything (⚠️ careful!)
+docker system prune -a
+```
+
+---
+
+## 📋 `.dockerignore` (Important!)
+
+Create a `.dockerignore` to exclude unnecessary files:
+
+```
+# .dockerignore
+node_modules
+.next
+.git
+.env
+.env.local
+*.log
+README.md
+.dockerignore
+Dockerfile
+docker-compose.yml
+```
+
+This makes builds faster and images smaller.
+
+---
+
+## 🎨 Multi-Stage Builds (Optimization)
+
+Use multi-stage builds to create smaller images:
+
+```dockerfile
+# Build stage
+FROM node:20-alpine AS builder
+WORKDIR /app
+COPY package*.json ./
+RUN npm ci
+COPY . .
+RUN npm run build
+
+# Production stage
+FROM node:20-alpine
+WORKDIR /app
+COPY --from=builder /app/dist ./dist
+COPY --from=builder /app/node_modules ./node_modules
+COPY package*.json ./
+EXPOSE 3000
+CMD ["node", "dist/index.js"]
+```
+
+---
+
+## 🐛 Debugging
+
+### Enter a Running Container
+
+```bash
+docker exec -it <container-id> sh
+```
+
+### View Container Logs
+
+```bash
+docker logs -f <container-id>
+```
+
+### Inspect Environment Variables
+
+```bash
+docker exec <container-id> env
+```
+
+### Check if Port is Exposed
+
+```bash
+docker port <container-id>
+```
+
+---
+
+## 📚 Resources
+
+- 📖 **Official Docs:** https://docs.docker.com
+- 🐙 **Docker Compose Docs:** https://docs.docker.com/compose
+- 🚂 **Railway Docs:** https://docs.railway.app
+- 🎨 **Render Docs:** https://render.com/docs
+- 🪰 **Fly.io Docs:** https://fly.io/docs
+
+---
+
+## ✅ Checklist for Hackathons
+
+- [ ] Create `Dockerfile` for each service
+- [ ] Add `.dockerignore` (faster builds)
+- [ ] Create `docker-compose.yml` for local dev
+- [ ] Test locally: `docker-compose up`
+- [ ] Set environment variables in deployment platform
+- [ ] Deploy to Railway/Render/Fly.io
+- [ ] Verify everything works in production
+
+---
+
+## 🚨 Common Mistakes
+
+### ❌ Don't
+- ❌ Copy `.env` into image (use environment variables)
+- ❌ Run as root (use non-root user)
+- ❌ Install dev dependencies in production image
+- ❌ Expose unnecessary ports
+- ❌ Forget `.dockerignore` (huge images)
+
+### ✅ Do
+- ✅ Use multi-stage builds (smaller images)
+- ✅ Use specific base image versions (`node:20-alpine`, not `node:latest`)
+- ✅ Run as non-root user
+- ✅ Use environment variables, not hardcoded secrets
+- ✅ Test locally before deploying
+
+---
+
+**Remember:** Docker ensures your hackathon project runs the same everywhere. Deploy with confidence! 🐳🚀
