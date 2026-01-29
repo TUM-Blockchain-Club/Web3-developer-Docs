@@ -1,4 +1,4 @@
 export default {
   "git": "🌿 Git",
-  "environment-variables": "Environment Variables"
+  "environment-variables": "🔒 Environment Variables"
 }
