@@ -1,1 +1,29 @@
 # 📜 Proxy Contracts
+
+**Proxy contracts** let you keep the same contract address while upgrading the logic behind it. Users and integrations keep calling the same address; only the implementation (code) is swapped.
+
+The idea is chain-agnostic, but the most common tooling and standards today are on the **EVM**.
+
+---
+
+## 🎯 Why Proxies
+
+- **Bug fixes** — Deploy new logic, point the proxy to it
+- **New features** — Add or change behavior without migrating users
+- **Same address** — No need to update frontends or integrations
+
+---
+
+## 📚 Concepts
+
+- **Proxy** — Holds state and forwards calls (e.g. via `delegatecall`) to an implementation contract.
+- **Implementation** — Contains the actual logic; can be replaced when you upgrade.
+- **Storage layout** must stay compatible across upgrades to avoid corrupting data.
+
+---
+
+## 🔗 EVM Deep Dive
+
+On Ethereum and EVM chains, upgradeable contracts are usually built with patterns like **Transparent Proxy**, **UUPS**, or **Beacon**, and tools like **OpenZeppelin Upgrades**.
+
+👉 **[Proxy Contracts (EVM)](/web3/evm/proxy-contracts)** — OpenZeppelin, Hardhat, deploy and upgrade examples.

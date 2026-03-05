@@ -1,1 +1,117 @@
 # 🔮 Oracles
+
+**Oracles** bring off-chain data (prices, weather, events) onto the blockchain so smart contracts can use it. Contracts cannot fetch URLs or APIs by themselves; oracles provide a trusted or decentralized bridge between the real world and on-chain logic.
+
+---
+
+## 🎯 Why Oracles Matter
+
+- **DeFi** — Lending, derivatives, and swaps need **price feeds** (e.g. ETH/USD)
+- **Gaming & NFTs** — Randomness, events, or external triggers
+- **Risk** — A single centralized price source can be manipulated; decentralized oracles reduce that risk
+
+---
+
+## 📚 Core Concepts
+
+| Term | Description |
+|------|-------------|
+| **Price feed** | On-chain data (e.g. latest ETH/USD) updated by the oracle |
+| **Aggregation** | Many sources combined (e.g. median) for a single answer |
+| **Decentralization** | Multiple independent nodes or data sources; no single point of failure |
+| **Consumption** | Your contract reads the oracle contract (e.g. `latestRoundData()`) |
+
+---
+
+## 🛠️ Oracle Options
+
+### Chainlink (EVM and more)
+
+[Chainlink Data Feeds](https://data.chain.link/) provide decentralized price feeds and other data on many chains (Ethereum, Polygon, Arbitrum, etc.). Contracts read from a **feed contract** (aggregator).
+
+- [Chainlink docs](https://docs.chain.link/)
+- [Data feeds list](https://docs.chain.link/data-feeds/price-feeds/addresses)
+- [Consuming data](https://docs.chain.link/data-feeds/consuming-data)
+
+### Other providers
+
+- [Pyth Network](https://pyth.network/) — Low-latency price feeds (Solana, EVM, others)
+- [UMA Oracle](https://docs.uma.xyz/) — Optimistic oracle for custom data
+- [Band Protocol](https://bandprotocol.com/) — Multi-chain oracles
+- [RedStone](https://redstone.finance/) — Modular oracles
+
+---
+
+## 📝 Code: Reading a Chainlink Price Feed (Solidity)
+
+```solidity
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.0;
+
+import "@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
+
+contract PriceConsumer {
+    AggregatorV3Interface internal priceFeed;
+
+    // Sepolia ETH/USD feed
+    constructor() {
+        priceFeed = AggregatorV3Interface(
+            0x694AA1769357215DE4FAC081bf1f309aDC325306
+        );
+    }
+
+    function getLatestPrice() public view returns (int256) {
+        (
+            /* uint80 roundID */,
+            int256 price,
+            /* uint256 startedAt */,
+            /* uint256 timeStamp */,
+            /* uint80 answeredInRound */
+        ) = priceFeed.latestRoundData();
+        return price; // e.g. 2000_00000000 = $2000 (8 decimals)
+    }
+}
+```
+
+Install: `npm install @chainlink/contracts`. Use the [correct feed address](https://docs.chain.link/data-feeds/price-feeds/addresses) for your network.
+
+---
+
+## 📝 Code: Reading a Chainlink Price (JavaScript)
+
+```javascript
+const { ethers } = require("ethers");
+
+const abi = [
+  "function latestRoundData() external view returns (uint80 roundId, int256 answer, uint256 startedAt, uint256 updatedAt, uint80 answeredInRound)",
+];
+
+const provider = new ethers.JsonRpcProvider(process.env.RPC_URL);
+const feed = new ethers.Contract(
+  "0x694AA1769357215DE4FAC081bf1f309aDC325306", // Sepolia ETH/USD
+  abi,
+  provider
+);
+
+const data = await feed.latestRoundData();
+const price = Number(data.answer) / 1e8;
+console.log("ETH/USD:", price);
+```
+
+---
+
+## ⚠️ Security Notes
+
+- **Don’t use a single API** in a contract via a custom oracle unless you fully trust it and accept manipulation risk.
+- **Staleness** — Check `updatedAt` (or equivalent) and reject data that is too old.
+- **Decentralized feeds** — Prefer aggregated, decentralized oracles (e.g. Chainlink) for critical pricing.
+- See [Smart Contract Security](/web3/smart-contract-security) and [EVM Smart Contract Security](/web3/evm/smart-contract-security) for general practices.
+
+---
+
+## 🔗 Resources
+
+- [Chainlink: Data Feeds](https://docs.chain.link/data-feeds)
+- [Chainlink: Contract addresses](https://docs.chain.link/data-feeds/price-feeds/addresses)
+- [Pyth Network](https://pyth.network/)
+- [Oracle design (Chainlink)](https://blog.chain.link/what-is-the-blockchain-oracle-problem/)

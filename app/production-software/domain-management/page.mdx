@@ -1,1 +1,170 @@
 # 🌐 Domain Management
+
+**Point a custom domain to your Web3 app** and manage DNS and SSL so users get a professional, secure URL.
+
+Whether your app is on [Vercel](https://vercel.com/docs/concepts/projects/domains), [Netlify](https://docs.netlify.com/domains-https/custom-domains/), [Cloudflare Pages](https://developers.cloudflare.com/pages/configuration/custom-domains/), or another host, the same concepts apply: **DNS records** and **HTTPS**.
+
+---
+
+## 🎯 Why Custom Domains Matter
+
+- **Trust** — `app.yourproject.io` looks more professional than `random-name-123.vercel.app`
+- **Branding** — Same name across marketing, docs, and app
+- **Stability** — Change hosting without changing the URL users know
+- **SEO and links** — One canonical URL to share and index
+
+---
+
+## 📚 Core Concepts
+
+| Term | Meaning |
+|------|--------|
+| **Domain** | Human-readable name (e.g. `yourproject.io`) |
+| **DNS** | System that maps domain names to IPs and other records |
+| **A record** | Points a domain to an IPv4 address |
+| **CNAME** | Points a subdomain to another hostname (e.g. `app` → `cname.vercel-dns.com`) |
+| **TXT record** | Used for verification and sometimes routing (e.g. [Vercel](https://vercel.com/docs/concepts/projects/domains#dns-records)) |
+| **SSL/TLS** | Encrypted HTTPS; usually via [Let’s Encrypt](https://letsencrypt.org/) or the host’s certificate |
+
+---
+
+## 🛠️ Where to Buy and Manage Domains
+
+- [**Cloudflare Registrar**](https://www.cloudflare.com/products/registrar/) — At-cost pricing, DNS and proxy in one place
+- [**Namecheap**](https://www.namecheap.com/support/knowledgebase/article.aspx/767/10/how-do-i-add-a-custom-domain-to-my-hosting-account/) — Popular, good support
+- [**Google Domains**](https://domains.google/) (now Squarespace) — Simple UI
+- [**Porkbun**](https://porkbun.com/) — Low prices, straightforward DNS
+- [**Vercel Domains**](https://vercel.com/docs/concepts/projects/domains) — Buy and attach in one flow if you deploy on Vercel
+
+You can **buy** the domain at one place and **manage DNS** at another (e.g. buy at Namecheap, use [Cloudflare DNS](https://developers.cloudflare.com/dns/) for free).
+
+---
+
+## 📋 Adding a Custom Domain (High Level)
+
+1. **Buy the domain** (or use one you already own).
+2. **Add the domain** in your host (Vercel, Netlify, etc.); they’ll show required DNS records.
+3. **Create DNS records** at your registrar or DNS provider (see below).
+4. **Wait for propagation** (minutes to 48 hours; often under 15 minutes).
+5. **Enable HTTPS** — Most hosts do this automatically once DNS is correct.
+
+---
+
+## 🔧 DNS Records: What to Add
+
+Hosts tell you exactly which records to create. Typical patterns:
+
+### Vercel
+
+- [Add a domain](https://vercel.com/docs/concepts/projects/domains#adding-a-domain) in Project → **Settings** → **Domains**.
+- For **root** `yourproject.io` they often ask for:
+  - **A** `76.76.21.21` (or the IP they show)
+- For **www** or **app** they usually ask for:
+  - **CNAME** `www` (or `app`) → `cname.vercel-dns.com`
+
+Example (conceptual; use the values Vercel shows):
+
+```text
+# At your DNS provider (e.g. Cloudflare, Namecheap)
+
+Type   Name   Value                    TTL
+----   ----   -----                    ---
+A      @      76.76.21.21              3600
+CNAME  www    cname.vercel-dns.com      3600
+```
+
+### Netlify
+
+- [Add custom domain](https://docs.netlify.com/domains-https/custom-domains/) in **Domain settings**.
+- Netlify gives you a target like `your-site.netlify.app`. Typical:
+  - **CNAME** `www` → `your-site.netlify.app`
+  - For apex they may use **ANAME/ALIAS** or **A** to their load balancer; follow their UI.
+
+### Cloudflare Pages
+
+- [Custom domains](https://developers.cloudflare.com/pages/configuration/custom-domains/) — If the domain is on Cloudflare, add it in the Pages project; CNAME or A/AAAA as shown.
+
+### Generic (any host)
+
+If your host gives you an **IP**:
+
+```text
+Type   Name   Value           TTL
+----   ----   -----           ---
+A      @      203.0.113.10    3600
+A      www    203.0.113.10    3600
+```
+
+If they give you a **hostname**:
+
+```text
+Type   Name   Value
+----   ----   -----
+CNAME  www    your-app.fly.dev
+```
+
+---
+
+## 🔒 SSL/HTTPS
+
+- **Vercel / Netlify / Cloudflare Pages** — Provision certificates automatically once DNS points to them.
+- **Custom server** — Use [Let’s Encrypt](https://letsencrypt.org/) with [Certbot](https://certbot.eff.org/) or your host’s tooling.
+- **Cloudflare** — Can proxy traffic and terminate SSL; enable “Full (strict)” if you use their SSL.
+
+No code change is required for basic HTTPS; it’s configured at the host/DNS level.
+
+---
+
+## 📝 Example: Cloudflare DNS (Web UI)
+
+1. Log in at [dash.cloudflare.com](https://dash.cloudflare.com).
+2. Select the zone (your domain).
+3. Go to **DNS** → **Records**.
+4. Add record:
+   - **Type:** CNAME  
+   - **Name:** `app` (for `app.yourproject.io`)  
+   - **Target:** `cname.vercel-dns.com` (or the value from your host)  
+   - **Proxy status:** Proxied (orange cloud) or DNS only (grey), as you prefer.
+5. Save. Propagation is usually quick.
+
+---
+
+## 🖥️ Example: CLI (Cloudflare)
+
+If you use [Cloudflare API](https://developers.cloudflare.com/api/) or [Wrangler](https://developers.cloudflare.com/workers/wrangler/), you can add records via CLI:
+
+```bash
+# Create CNAME for app.yourproject.io → Vercel
+# (Replace ZONE_ID and values with yours)
+curl -X POST "https://api.cloudflare.com/client/v4/zones/ZONE_ID/dns_records" \
+  -H "Authorization: Bearer YOUR_API_TOKEN" \
+  -H "Content-Type: application/json" \
+  --data '{
+    "type": "CNAME",
+    "name": "app",
+    "content": "cname.vercel-dns.com",
+    "ttl": 3600,
+    "proxied": false
+  }'
+```
+
+---
+
+## ✅ Checklist
+
+- [ ] Domain bought and DNS accessible (registrar or Cloudflare)
+- [ ] Domain added in hosting dashboard (Vercel/Netlify/Pages)
+- [ ] A and/or CNAME records created as instructed
+- [ ] Propagation waited (check with [whatsmydns.net](https://www.whatsmydns.net/))
+- [ ] HTTPS working (host usually does this automatically)
+- [ ] Optional: [Environment variables](/basics/environment-variables) for app URL if needed
+
+---
+
+## 🔗 Further Reading
+
+- [Vercel: Custom Domains](https://vercel.com/docs/concepts/projects/domains)
+- [Netlify: Custom domains & HTTPS](https://docs.netlify.com/domains-https/custom-domains/)
+- [Cloudflare DNS](https://developers.cloudflare.com/dns/)
+- [Let’s Encrypt](https://letsencrypt.org/)
+- [What’s My DNS](https://www.whatsmydns.net/) — Check DNS propagation

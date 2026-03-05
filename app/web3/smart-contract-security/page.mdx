@@ -1,1 +1,31 @@
 # 🛡️ Smart Contract Security
+
+Smart contracts that hold value are attractive targets. **Security** means designing for malicious users, reusing audited code, testing thoroughly, and (for serious value) getting professional audits.
+
+Many practices (reentrancy, access control, oracles, signature replay) are explained in an **EVM/Solidity** context because that’s where most material and tooling exists, but the principles apply across chains.
+
+---
+
+## 🎯 Principles
+
+- **Assume the contract will hold value** — Design for abuse and edge cases.
+- **Reuse audited code** — e.g. [OpenZeppelin](https://www.openzeppelin.com/contracts).
+- **Test and fuzz** — Unit tests, mainnet forking, static analysis.
+- **Audit** for anything holding significant funds.
+
+---
+
+## ⚠️ Common Risks
+
+- **Reentrancy** — External calls before state updates; use checks–effects–interactions.
+- **Access control** — Restrict sensitive functions (owner, roles).
+- **Oracles** — Don’t trust a single price source; use [oracles](/web3/oracles) and decentralized feeds where possible.
+- **Signature replay** — Bind signatures to chain, nonce, deadline (e.g. [EIP-712](https://eips.ethereum.org/EIPS/eip-712)).
+
+---
+
+## 🔗 EVM Deep Dive
+
+For Solidity/EVM-specific patterns, examples, and tooling (Slither, OpenZeppelin):
+
+👉 **[Smart Contract Security (EVM)](/web3/evm/smart-contract-security)** — ReentrancyGuard, SafeMath, and more.

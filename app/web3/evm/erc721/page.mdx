@@ -1,0 +1,95 @@
+# 🎨 ERC721 NFTs
+
+**ERC721** is the standard for **non-fungible** tokens (NFTs) on the EVM: each token has a unique ID and is not interchangeable. Defined by [EIP-721](https://eips.ethereum.org/EIPS/eip-721).
+
+---
+
+## 🎯 Why ERC721
+
+- **Uniqueness** — Each token ID maps to one owner; ideal for art, collectibles, in-game items
+- **Ecosystem** — [OpenSea](https://opensea.io/), [Rarible](https://rarible.com/), and wallets treat ERC721 as the default NFT standard
+- **Extensions** — [ERC721Enumerable](https://docs.openzeppelin.com/contracts/4.x/api/token/erc721#ERC721Enumerable), metadata (name, symbol, `tokenURI`)
+
+---
+
+## 📚 Core Interface
+
+```solidity
+// Minimal interface (EIP-721)
+interface IERC721 {
+    function balanceOf(address owner) external view returns (uint256);
+    function ownerOf(uint256 tokenId) external view returns (address);
+    function safeTransferFrom(address from, address to, uint256 tokenId) external;
+    function transferFrom(address from, address to, uint256 tokenId) external;
+    function approve(address to, uint256 tokenId) external;
+    function getApproved(uint256 tokenId) external view returns (address);
+    function setApprovalForAll(address operator, bool approved) external;
+    function isApprovedForAll(address owner, address operator) external view returns (bool);
+
+    event Transfer(address indexed from, address indexed to, uint256 indexed tokenId);
+    event Approval(address indexed owner, address indexed approved, uint256 indexed tokenId);
+    event ApprovalForAll(address indexed owner, address indexed operator, bool approved);
+}
+```
+
+Metadata is usually provided via **ERC721Metadata**: `name()`, `symbol()`, `tokenURI(tokenId)` (returns a URL to JSON with name, description, image).
+
+---
+
+## 📝 Minimal ERC721 Example
+
+Using [OpenZeppelin](https://docs.openzeppelin.com/contracts/4.x/erc721):
+
+```solidity
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.0;
+
+import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
+import "@openzeppelin/contracts/access/Ownable.sol";
+
+contract MyNFT is ERC721, Ownable {
+    uint256 private _nextTokenId;
+
+    constructor() ERC721("MyNFT", "MNFT") {}
+
+    function mint(address to) public onlyOwner returns (uint256) {
+        uint256 tokenId = _nextTokenId++;
+        _safeMint(to, tokenId);
+        return tokenId;
+    }
+}
+```
+
+---
+
+## 🔧 Reading NFT Data (ethers.js v6)
+
+```javascript
+import { ethers } from 'ethers';
+
+const provider = new ethers.JsonRpcProvider(process.env.RPC_URL);
+const nftAddress = '0x...';
+const abi = [
+  'function ownerOf(uint256 tokenId) view returns (address)',
+  'function tokenURI(uint256 tokenId) view returns (string)',
+  'function balanceOf(address owner) view returns (uint256)'
+];
+
+const nft = new ethers.Contract(nftAddress, abi, provider);
+const tokenId = 1n;
+
+const owner = await nft.ownerOf(tokenId);
+const tokenURI = await nft.tokenURI(tokenId);
+
+// tokenURI often points to IPFS or HTTP JSON (name, description, image)
+const meta = await fetch(tokenURI).then(r => r.json());
+console.log(meta.name, meta.image);
+```
+
+---
+
+## 🔗 Resources
+
+- [EIP-721: Non-Fungible Token Standard](https://eips.ethereum.org/EIPS/eip-721)
+- [OpenZeppelin ERC721](https://docs.openzeppelin.com/contracts/4.x/erc721)
+- [NFT Metadata (OpenSea)](https://docs.opensea.io/docs/metadata-standards)

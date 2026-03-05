@@ -1,11 +1,116 @@
 # 🗓️ Suggested Schedule
 
-The suggested schedule for this GitBook is the following:
+A **recommended path** through the docs: start with foundations, then pick a chain (EVM or Solana), build with generic tools, and optionally dive into hackathons and production topics.
 
-| Category | Topic                  |
-|----------|------------------------|
-| Web3     | [Metamask](/web3/metamask) |
-|          |                        |
-|          |                        |
-|          |                        |
+---
 
+## 📍 Phase 1: Foundations
+
+| Order | Topic | Link | Notes |
+|-------|--------|------|--------|
+| 1 | **Getting Started** | [Getting Started](/get_started) | Web2 vs Web3, why you need a wallet |
+| 2 | **MetaMask & Wallet Fundamentals** | [Weekly: MetaMask & Wallet Fundamentals](/weekly-presentations/subpage-1) | Keys, gas, seed phrases, DeFi basics |
+| 3 | **MetaMask (reference)** | [MetaMask](/web3/metamask) | Setup, networks, security, dApp connection |
+
+---
+
+## 📍 Phase 2: Basics (Before Code)
+
+| Order | Topic | Link | Notes |
+|-------|--------|------|--------|
+| 1 | **Git** | [Git](/basics/git) | Version control and collaboration |
+| 2 | **Environment Variables** | [Environment Variables](/basics/environment-variables) | Secrets, `.env`, security, what to do if leaked |
+
+---
+
+## 📍 Phase 3: Web3 — Pick a Chain
+
+Choose **EVM** or **Solana** (or both) and follow the links for that chain.
+
+### Option A: EVM (Ethereum, Polygon, Arbitrum, Base, etc.)
+
+| Order | Topic | Link |
+|-------|--------|------|
+| 1 | **EVM Overview** | [EVM](/web3/evm) |
+| 2 | **Hardhat** | [Hardhat](/web3/evm/hardhat) |
+| 3 | **ERC20 & ERC721** | [ERC20](/web3/evm/erc20), [ERC721](/web3/evm/erc721) |
+| 4 | **DApp (EVM)** | [Scaffold-ETH 2](/web3/evm/dapp/scaffold-eth-2), [Wagmi & RainbowKit](/web3/evm/dapp/wagmi-and-rainbowkit) |
+| 5 | **Proxies & Security** | [Proxy Contracts](/web3/evm/proxy-contracts), [Smart Contract Security](/web3/evm/smart-contract-security) |
+
+**Workshop:** [Hardhat & Web3 Dev Setup](/weekly-presentations/subpage-3) — Full setup, deploy to Sepolia.
+
+### Option B: Solana
+
+| Order | Topic | Link |
+|-------|--------|------|
+| 1 | **Solana Overview** | [Solana](/web3/solana) |
+| 2 | **Accounts & Programs** | [Accounts](/web3/solana/accounts), [Programs](/web3/solana/programs) |
+| 3 | **NFTs (Metaplex)** | [Metaplex](/web3/solana/metaplex) |
+
+---
+
+## 📍 Phase 4: Cross-Chain & Generic Web3
+
+Use these regardless of chain:
+
+| Topic | Link | Notes |
+|--------|------|--------|
+| **DApp (generic)** | [DApp](/web3/dapp) | Overview and links by chain |
+| **IPFS** | [IPFS](/web3/ipfs) | Decentralized storage, NFT metadata |
+| **Oracles** | [Oracles](/web3/oracles) | Price feeds and off-chain data |
+| **Multi-Signature Wallets** | [Multi-Signature Wallets](/web3/multisig-wallets) | Shared control of funds |
+| **Proxy Contracts** | [Proxy Contracts](/web3/proxy-contracts) | Upgradeable contracts (concept) |
+| **Smart Contract Security** | [Smart Contract Security](/web3/smart-contract-security) | Principles and EVM deep dive |
+| **Faucets** | [Faucets](/web3/faucets) | Testnet tokens for development |
+
+---
+
+## 📍 Phase 5: Hackathons (Optional)
+
+When you’re ready to ship something in a weekend:
+
+| Topic | Link |
+|--------|------|
+| **Hackathon Preparation** | [Hackathon Preparation Guide](/weekly-presentations/subpage-2) |
+| **Winning Idea** | [Winning Idea?](/hackathon/winning-idea) |
+| **Supabase** | [Supabase](/hackathon/supabase) |
+| **Docker** | [Docker](/hackathon/docker) |
+| **Basic Server** | [Basic Server Setup](/hackathon/basic-server) |
+
+---
+
+## 📍 Phase 6: Production
+
+Before or after going to mainnet:
+
+| Topic | Link |
+|--------|------|
+| **CI/CD** | [CI/CD](/production-software/ci-cd) |
+| **Domain Management** | [Domain Management](/production-software/domain-management) |
+
+---
+
+## 📍 Weekly Presentations (Live Material)
+
+Slides and walkthroughs that match the schedule:
+
+| Session | Topic | Link |
+|---------|--------|------|
+| 1 | **MetaMask & Wallet Fundamentals** | [Subpage 1](/weekly-presentations/subpage-1) |
+| 2 | **Hackathon Preparation Guide** | [Subpage 2](/weekly-presentations/subpage-2) |
+| 3 | **Hardhat & Web3 Dev Setup** | [Subpage 3](/weekly-presentations/subpage-3) |
+
+---
+
+## 🔁 Quick Reference: All Sections
+
+| Section | What’s inside |
+|---------|----------------|
+| [Getting Started](/get_started) | Web2 vs Web3, wallets |
+| [Basics](/basics/git) | Git, environment variables |
+| [Web3](/web3/evm) | EVM, Solana, DApp, MetaMask, IPFS, oracles, multisig, proxies, security, faucets |
+| [Hackathon](/hackathon/winning-idea) | Winning idea, Supabase, Docker, basic server |
+| [Production Software](/production-software/ci-cd) | CI/CD, domain management |
+| [Weekly Presentations](/weekly-presentations/subpage-1) | MetaMask, hackathon prep, Hardhat setup |
+
+You can follow the phases in order or jump to a section you need. The schedule is a suggestion, not a strict sequence.

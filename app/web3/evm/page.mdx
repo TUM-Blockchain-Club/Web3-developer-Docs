@@ -1,0 +1,44 @@
+# 📖 EVM Overview
+
+The **Ethereum Virtual Machine (EVM)** is the runtime environment for smart contracts on Ethereum and other **EVM-compatible** chains (Polygon, Arbitrum, Base, Optimism, BNB Chain, etc.). Code written in **Solidity** (or Vyper) compiles to bytecode that runs on the EVM.
+
+---
+
+## 🎯 Why EVM Matters
+
+- **One language, many chains** — Write Solidity once, deploy to Ethereum L1, L2s, and sidechains
+- **Huge ecosystem** — [Ethers.js](https://docs.ethers.org/v6/), [Hardhat](https://hardhat.org/), [OpenZeppelin](https://www.openzeppelin.com/contracts), and most tooling targets the EVM
+- **Standards** — [ERC-20](https://eips.ethereum.org/EIPS/eip-20), [ERC-721](https://eips.ethereum.org/EIPS/eip-721), and other [EIPs](https://eips.ethereum.org/) define tokens and interfaces
+
+---
+
+## 📚 Core Concepts
+
+| Concept | Description |
+|--------|-------------|
+| **Smart contract** | Code deployed on-chain; immutable once deployed (or upgradeable via [proxies](/web3/evm/proxy-contracts)) |
+| **Gas** | Fee paid in the chain’s native token (ETH, MATIC, etc.) to execute transactions |
+| **ABI** | Application Binary Interface — JSON description of a contract’s functions and events |
+| **EIP / ERC** | Ethereum Improvement Proposal / Ethereum Request for Comments — standards for tokens and behavior |
+
+---
+
+## 🔗 EVM Chains (Examples)
+
+- [Ethereum](https://ethereum.org/) — L1
+- [Polygon](https://polygon.technology/)
+- [Arbitrum](https://arbitrum.io/)
+- [Optimism](https://www.optimism.io/)
+- [Base](https://base.org/)
+- [BNB Chain](https://www.bnbchain.org/)
+
+---
+
+## 📖 In This Section
+
+- [ERC20 Tokens](/web3/evm/erc20) — Fungible tokens
+- [ERC721 NFTs](/web3/evm/erc721) — Non-fungible tokens
+- [Hardhat](/web3/evm/hardhat) — Development and testing
+- [Proxy Contracts](/web3/evm/proxy-contracts) — Upgradeable contracts
+- [Smart Contract Security](/web3/evm/smart-contract-security) — Best practices
+- [DApp (EVM)](/web3/evm/dapp) — Frontend tooling (Scaffold-ETH, Wagmi, RainbowKit)

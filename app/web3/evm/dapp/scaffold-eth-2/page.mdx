@@ -1,0 +1,84 @@
+# 🏗️ Scaffold-ETH 2
+
+**Scaffold-ETH 2** is a full-stack EVM template: Hardhat contracts, a React frontend (Next.js), and wallet connection (RainbowKit) in one repo. Great for hackathons and quick prototypes.
+
+---
+
+## 🎯 Why Scaffold-ETH 2
+
+- **One repo** — Contracts, tests, and frontend together
+- **Hardhat + React** — Deploy from the app; hot-reload on contract changes
+- **Built-in wallet UI** — RainbowKit for connect/switch/display
+- **Default network** — Local chain (Hardhat) or public testnets
+- **Documentation** — [docs.scaffoldeth.io](https://docs.scaffoldeth.io/)
+
+---
+
+## 🚀 Quick Start
+
+```bash
+npx create-eth@latest
+# Choose "Scaffold-ETH 2" and project name
+cd my-app
+npm install
+```
+
+Run local chain and frontend:
+
+```bash
+npm run chain    # Terminal 1: Hardhat network
+npm run deploy   # Terminal 2: Deploy contracts
+npm run start    # Terminal 3: Next.js app
+```
+
+---
+
+## 📁 Structure
+
+```text
+packages/
+  hardhat/     # Contracts, scripts, tests
+  nextjs/      # Next.js app (React, RainbowKit, contract hooks)
+  subgraph/    # Optional: The Graph
+```
+
+---
+
+## 🔧 Using Contracts in the Frontend
+
+Scaffold-ETH 2 generates React hooks from your ABIs. After deploy, use contract name as hook:
+
+```javascript
+// In a React component
+import { useDeployedContractInfo } from "~~/hooks/scaffold-eth/useDeployedContractInfo";
+import { useScaffoldContractRead, useScaffoldContractWrite } from "~~/hooks/scaffold-eth";
+
+function MyComponent() {
+  const { data: balance } = useScaffoldContractRead({
+    contractName: "YourToken",
+    functionName: "balanceOf",
+    args: [address],
+  });
+
+  const { writeAsync: mint } = useScaffoldContractWrite({
+    contractName: "YourToken",
+    functionName: "mint",
+    args: [address, amount],
+  });
+
+  return (
+    <div>
+      Balance: {balance?.toString()}
+      <button onClick={() => mint()}>Mint</button>
+    </div>
+  );
+}
+```
+
+---
+
+## 🔗 Resources
+
+- [Scaffold-ETH 2 docs](https://docs.scaffoldeth.io/)
+- [GitHub: scaffold-eth-2](https://github.com/scaffold-eth/scaffold-eth-2)
+- [RainbowKit](https://www.rainbowkit.com/) — Wallet connection UI used by the template

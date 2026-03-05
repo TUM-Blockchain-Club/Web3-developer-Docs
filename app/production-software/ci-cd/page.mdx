@@ -1,1 +1,235 @@
 # 🔄 CI/CD
+
+**Continuous Integration and Continuous Deployment** — automate builds, tests, and deployments so every push can ship safely.
+
+CI/CD is essential for production Web3 apps: run tests on every commit, deploy contracts and frontends from a single pipeline, and avoid manual mistakes.
+
+---
+
+## 🎯 Why CI/CD Matters for Web3
+
+- **Catch bugs before mainnet** — Run tests and lint on every PR
+- **Reproducible deployments** — Same steps every time, no "I forgot to run X"
+- **Audit trail** — Who deployed what, when, from which commit
+- **Security** — Run secret scanning, dependency checks, and contract verification in the pipeline
+
+---
+
+## 📚 Key Concepts
+
+| Term | Meaning |
+|------|--------|
+| **CI** | Automatically build and test code on every push/PR |
+| **CD** | Automatically deploy (or prepare artifacts) after successful CI |
+| **Pipeline** | Sequence of steps (install → test → build → deploy) |
+| **Workflow** | The config file that defines your pipeline |
+
+---
+
+## 🛠️ Popular CI/CD Platforms
+
+- [**GitHub Actions**](https://docs.github.com/en/actions) — Native to GitHub, free for public repos, generous free tier for private
+- [**GitLab CI/CD**](https://docs.gitlab.com/ee/ci/) — Built into GitLab, powerful and flexible
+- [**CircleCI**](https://circleci.com/docs/) — Fast, good for complex workflows
+- [**Vercel**](https://vercel.com/docs/concepts/deployments/overview) / [**Netlify**](https://docs.netlify.com/site-deploys/overview/) — Auto-deploy from Git (CD-focused)
+- [**Railway**](https://docs.railway.app/deploy/deployments) / [**Render**](https://render.com/docs/deploys) — Git-based deploys with env and Docker support
+
+---
+
+## 🚀 GitHub Actions: Quick Start
+
+Create `.github/workflows/ci.yml` in your repo:
+
+```yaml
+# .github/workflows/ci.yml
+name: CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - run: npm ci
+      - run: npm run lint
+      - run: npm test
+```
+
+This runs `npm ci`, `npm run lint`, and `npm test` on every push and PR to `main`/`develop`.
+
+---
+
+## 📦 Build and Test (Node / Hardhat)
+
+Example for a typical Web3 monorepo (app + contracts):
+
+```yaml
+# .github/workflows/build-and-test.yml
+name: Build and Test
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test-contracts:
+    name: Test contracts
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - run: npm ci
+      - name: Compile contracts
+        run: npx hardhat compile
+      - name: Run contract tests
+        run: npx hardhat test
+
+  test-app:
+    name: Test app
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - run: npm ci
+      - run: npm run build
+```
+
+---
+
+## 🔐 Using Secrets in CI/CD
+
+Never commit API keys or private keys. Use your platform’s **secrets** and inject them as environment variables.
+
+**GitHub Actions:** [Encrypted secrets](https://docs.github.com/en/actions/security-guides/encrypted-secrets)
+
+1. Repo → **Settings** → **Secrets and variables** → **Actions**
+2. Add e.g. `PRIVATE_KEY`, `ALCHEMY_API_KEY`, `VERCEL_TOKEN`
+
+```yaml
+# Use secrets in a job
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    env:
+      PRIVATE_KEY: ${{ secrets.DEPLOYER_PRIVATE_KEY }}
+      RPC_URL: ${{ secrets.SEPOLIA_RPC_URL }}
+    steps:
+      - uses: actions/checkout@v4
+      - run: npm ci
+      - run: npx hardhat run scripts/deploy.js --network sepolia
+```
+
+**Best practice:** Use a **deployer wallet** with minimal funds; never use a wallet holding real user assets.
+
+---
+
+## 🚢 Deploy from CI (CD)
+
+### Deploy frontend to Vercel
+
+[Vercel GitHub integration](https://vercel.com/docs/concepts/git/vercel-for-github) deploys automatically. For custom control, use the [Vercel CLI](https://vercel.com/docs/cli) in Actions:
+
+```yaml
+# .github/workflows/deploy-vercel.yml
+name: Deploy to Vercel
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - run: npm ci
+      - run: npm run build
+
+      - name: Deploy to Vercel
+        uses: amondnet/vercel-action@v25
+        with:
+          vercel-token: ${{ secrets.VERCEL_TOKEN }}
+          vercel-org-id: ${{ secrets.VERCEL_ORG_ID }}
+          vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
+          working-directory: ./
+```
+
+### Deploy with Docker (e.g. Railway)
+
+```yaml
+# .github/workflows/deploy-railway.yml
+name: Deploy to Railway
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Railway CLI
+        run: npm i -g @railway/cli
+
+      - name: Deploy
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+        run: railway up --service my-app
+```
+
+See [Railway’s deployment docs](https://docs.railway.app/deploy/deployments) for tokens and service names.
+
+---
+
+## ✅ Good Practices
+
+- **Run tests and lint on every PR** — Block merge if they fail
+- **Use matrix builds** for multiple Node versions if you support them
+- **Cache dependencies** — `cache: 'npm'` or [actions/cache](https://github.com/actions/cache) to speed up runs
+- **Pin actions by tag** — Prefer `@v4` over `@main`
+- **Store all secrets in the platform** — Never log or commit them
+- **Document your workflows** — Brief comment in the YAML or a CONTRIBUTING.md
+
+---
+
+## 🔗 Further Reading
+
+- [GitHub Actions documentation](https://docs.github.com/en/actions)
+- [Hardhat CI documentation](https://hardhat.org/hardhat-runner/docs/guides/ci)
+- [Vercel deployments](https://vercel.com/docs/concepts/deployments/overview)
+- [Environment Variables](/basics/environment-variables) — Keep secrets out of the repo

@@ -1,0 +1,83 @@
+# ⚙️ Programs
+
+**Programs** on Solana are the equivalent of smart contracts: on-chain, immutable code that processes **instructions** and reads/writes **accounts**. They are compiled to BPF bytecode and deployed with a fixed **program ID**.
+
+---
+
+## 🎯 Key Ideas
+
+- **Instructions** — A single “method call”: program ID + list of accounts + instruction data (often serialized with [Borsh](https://borsh.io/)).
+- **Program ID** — The public key of the program; clients pass it in every instruction.
+- **No internal storage** — State lives in **accounts** owned by the program, not in the program binary.
+
+---
+
+## 📚 Development Options
+
+| Tool | Description |
+|------|-------------|
+| **Native (C/Rust)** | [Solana SDK](https://docs.solana.com/developing/on-chain-programs/developing-rust); maximum control |
+| **Anchor** | [Anchor](https://www.anchor-lang.com/) — Rust framework with IDL, macros, and client codegen |
+| **Seahorse** | Python-like language that compiles to Solana programs |
+
+---
+
+## 📝 Calling a Program (Client-Side)
+
+You need: **program ID**, **accounts** required by the instruction, and **instruction data** (layout must match the program).
+
+```javascript
+import {
+  Connection,
+  Keypair,
+  PublicKey,
+  Transaction,
+  sendAndConfirmTransaction,
+} from "@solana/web3.js";
+
+const connection = new Connection("https://api.devnet.solana.com");
+const programId = new PublicKey("YourProgramId...");
+
+// Build instruction (accounts + data depend on the program)
+const keys = [
+  { pubkey: account1, isSigner: true, isWritable: true },
+  { pubkey: account2, isSigner: false, isWritable: true },
+];
+
+const data = Buffer.alloc(8); // example: 8-byte instruction discriminator + args
+// ... encode your instruction args (e.g. with borsh)
+
+const ix = {
+  programId,
+  keys,
+  data,
+};
+
+const tx = new Transaction().add(ix);
+const sig = await sendAndConfirmTransaction(connection, tx, [payerKeypair]);
+console.log("Signature:", sig);
+```
+
+With **Anchor**, you typically use the generated client and IDL so you don’t hand-build `keys` and `data`:
+
+```javascript
+import { Program, AnchorProvider } from "@coral-xyz/anchor";
+import idl from "./idl/my_program.json";
+
+const provider = new AnchorProvider(connection, wallet, {});
+const program = new Program(idl, programId, provider);
+
+await program.methods
+  .myInstruction(arg1, arg2)
+  .accounts({ account1, account2 })
+  .rpc();
+```
+
+---
+
+## 🔗 Resources
+
+- [Solana: On-chain programs](https://docs.solana.com/developing/on-chain-programs/overview)
+- [Anchor book](https://www.anchor-lang.com/docs)
+- [Solana Cookbook: Programs](https://solanacookbook.com/core-concepts/accounts.html)
+- [Borsh serialization](https://borsh.io/)

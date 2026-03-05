@@ -1,0 +1,84 @@
+# 🛡️ Smart Contract Security
+
+Smart contracts on the EVM are **immutable** once deployed (unless you use [proxy contracts](/web3/evm/proxy-contracts)). Bugs can lock funds or enable theft. Following security practices and using battle-tested patterns reduces risk.
+
+---
+
+## 🎯 Principles
+
+- **Assume the contract will hold value** — Design for malicious callers and edge cases
+- **Reuse audited code** — [OpenZeppelin](https://www.openzeppelin.com/contracts), [Solmate](https://github.com/transmissions11/solmate)
+- **Test thoroughly** — Unit tests, fuzzing, and mainnet forking
+- **Get a professional audit** for anything holding significant value
+
+---
+
+## ⚠️ Common Vulnerabilities
+
+| Issue | What it is | Mitigation |
+|-------|------------|------------|
+| **Reentrancy** | External call before state update lets attacker re-enter and drain funds | Checks-Effects-Interactions; use [ReentrancyGuard](https://docs.openzeppelin.com/contracts/4.x/api/security#ReentrancyGuard) |
+| **Integer overflow/underflow** | Solidity &lt; 0.8 had no built-in checks | Use Solidity 0.8+ or SafeMath-style libraries |
+| **Access control** | Sensitive functions callable by anyone | [Ownable](https://docs.openzeppelin.com/contracts/4.x/api/access#Ownable), [AccessControl](https://docs.openzeppelin.com/contracts/4.x/api/access#AccessControl) |
+| **Front-running** | Miner or bot sees tx in mempool and copies or front-runs it | Use commit-reveal, private mempools, or design so front-running is unprofitable |
+| **Oracle manipulation** | Relying on a single price source that can be gamed | Use [decentralized oracles](/web3/oracles) (e.g. Chainlink); avoid spot-only or manipulable sources |
+| **Signature replay** | Reusing a signature on another chain or after use | Include chainId, nonce, deadline; use [EIP-712](https://eips.ethereum.org/EIPS/eip-712) |
+| **Delegatecall / storage** | Wrong storage layout or untrusted target in delegatecall | Use proxies correctly; never delegatecall to user-controlled addresses |
+
+---
+
+## ✅ Safe Patterns
+
+### Checks–Effects–Interactions
+
+Update state **before** external calls:
+
+```solidity
+// BAD: external call before state change
+function withdraw() external {
+    (bool ok,) = msg.sender.call{value: balances[msg.sender]}("");
+    require(ok);
+    balances[msg.sender] = 0; // too late — reentrancy
+}
+
+// GOOD: state change first
+function withdraw() external {
+    uint256 amount = balances[msg.sender];
+    balances[msg.sender] = 0;
+    (bool ok,) = msg.sender.call{value: amount}("");
+    require(ok);
+}
+```
+
+### Use OpenZeppelin
+
+```solidity
+import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
+import "@openzeppelin/contracts/security/Pausable.sol";
+
+contract MyContract is Ownable, ReentrancyGuard, Pausable {
+    function critical() external onlyOwner whenNotPaused nonReentrant {
+        // ...
+    }
+}
+```
+
+### Validate Inputs and Use Safe Math
+
+Solidity 0.8+ reverts on overflow/underflow. Still validate inputs (e.g. non-zero address, bounds):
+
+```solidity
+require(to != address(0), "zero address");
+require(amount > 0 && amount <= balanceOf[msg.sender], "bad amount");
+```
+
+---
+
+## 🔗 Resources
+
+- [Consensys: Smart Contract Best Practices](https://consensys.github.io/smart-contract-best-practices/)
+- [SWC Registry (Smart Contract Weakness Classification)](https://swcregistry.io/)
+- [OpenZeppelin Contracts](https://www.openzeppelin.com/contracts)
+- [Slither](https://github.com/crytic/slither) — Static analysis
+- [Ethers.js security](https://docs.ethers.org/v6/api/contract/contract/#Contract-security) — Avoid signing unchecked data

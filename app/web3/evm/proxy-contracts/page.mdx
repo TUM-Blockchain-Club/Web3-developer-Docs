@@ -1,0 +1,105 @@
+# 📜 Proxy Contracts
+
+**Proxy contracts** let you keep the same contract address while changing the code that runs behind it. Users and integrations always call the same address; only the implementation (logic) is swapped. This is the standard way to build **upgradeable** smart contracts on the EVM.
+
+---
+
+## 🎯 Why Proxies
+
+- **Bug fixes** — Deploy a new implementation and point the proxy to it
+- **New features** — Add functions or change logic without migrating state
+- **Same address** — Integrations, frontends, and users keep using the original contract address
+
+---
+
+## 📚 Core Idea
+
+```
+User → Proxy (fixed address) → Implementation (replaceable)
+         │
+         └── holds state (storage)
+         └── delegatecall() to implementation
+```
+
+- **Proxy** — Holds state (storage layout) and uses `delegatecall` to run the implementation’s code in its own context
+- **Implementation** — Contains the logic; has no state of its own (storage lives in the proxy)
+- **Critical** — Implementation and upgrades must preserve [storage layout](https://docs.openzeppelin.com/upgrades-plugins/1.x/proxy-upgrade#storage-collisions) to avoid corruption
+
+---
+
+## 📝 Common Patterns
+
+| Pattern | Description |
+|--------|-------------|
+| **Transparent Proxy** | Proxy has an admin; admin calls go to proxy, others are delegated. [OpenZeppelin](https://docs.openzeppelin.com/contracts/4.x/api/proxy#TransparentUpgradeableProxy) |
+| **UUPS (EIP-1822)** | Upgrade logic is in the implementation; implementation can be replaced. [OpenZeppelin](https://docs.openzeppelin.com/contracts/4.x/api/proxy#UUPSUpgradeable) |
+| **Beacon** | Many proxies point to one “beacon”; upgrading the beacon upgrades all. [OpenZeppelin](https://docs.openzeppelin.com/contracts/4.x/api/proxy#BeaconProxy) |
+
+---
+
+## 🔧 OpenZeppelin Upgrades (Hardhat)
+
+Install:
+
+```bash
+npm install --save-dev @openzeppelin/hardhat-upgrades
+```
+
+Config:
+
+```javascript
+// hardhat.config.js
+require("@openzeppelin/hardhat-upgrades");
+```
+
+Deploy as upgradeable:
+
+```javascript
+// scripts/deploy.js
+const { ethers, upgrades } = require("hardhat");
+
+async function main() {
+  const MyContract = await ethers.getContractFactory("MyContract");
+  const proxy = await upgrades.deployProxy(MyContract, [/* constructor args */], {
+    kind: "uups", // or "transparent"
+  });
+  await proxy.waitForDeployment();
+
+  console.log("Proxy at", await proxy.getAddress());
+}
+
+main().catch(console.error);
+```
+
+Upgrade later:
+
+```javascript
+// scripts/upgrade.js
+const { ethers, upgrades } = require("hardhat");
+
+async function main() {
+  const proxyAddress = "0x...";
+  const MyContractV2 = await ethers.getContractFactory("MyContractV2");
+  const upgraded = await upgrades.upgradeProxy(proxyAddress, MyContractV2);
+  console.log("Upgraded to", await upgraded.getAddress());
+}
+
+main().catch(console.error);
+```
+
+---
+
+## ⚠️ Security Notes
+
+- **Storage layout** — Never remove or reorder existing storage variables; only append. See [OpenZeppelin upgrades docs](https://docs.openzeppelin.com/upgrades-plugins/1.x/writing-upgradeable).
+- **Initializers** — Use `initializer` instead of `constructor` for upgradeable contracts so the implementation isn’t constructed twice.
+- **Access control** — Restrict who can upgrade (owner, multisig, timelock).
+
+---
+
+## 🔗 Resources
+
+- [EIP-1822: UUPS](https://eips.ethereum.org/EIPS/eip-1822)
+- [OpenZeppelin: Proxies](https://docs.openzeppelin.com/contracts/4.x/api/proxy)
+- [OpenZeppelin: Upgrades Plugins](https://docs.openzeppelin.com/upgrades-plugins/1.x/)
+- [Writing upgradeable contracts](https://docs.openzeppelin.com/upgrades-plugins/1.x/writing-upgradeable)

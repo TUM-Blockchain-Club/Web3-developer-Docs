@@ -1,1 +1,113 @@
 # 🧊 IPFS
+
+**IPFS** (InterPlanetary File System) is a decentralized storage and content-addressed network. Files are identified by their **content hash** (CID), not by a server URL. It’s widely used in Web3 for NFT metadata, static assets, and data that should be durable and censorship-resistant.
+
+---
+
+## 🎯 Why IPFS in Web3
+
+- **Content addressing** — Same content → same CID; no broken links when hosts change
+- **Decentralized** — No single point of failure; anyone can pin and serve content
+- **NFT metadata** — [ERC721](/web3/evm/erc721) and [Metaplex](/web3/solana/metaplex) often point `tokenURI` / metadata to IPFS
+- **dApp assets** — Frontend assets or data can be published on IPFS
+
+---
+
+## 📚 Core Concepts
+
+| Term | Description |
+|------|-------------|
+| **CID** | Content Identifier — hash of the content (e.g. `QmXoypizjW3WknFiJnKLwHCnL72vedxjQkDDP1mXWo6uco`) |
+| **Pin** | Store a copy of the content so it stays available; “pinning” = keeping it |
+| **Gateway** | HTTP endpoint that fetches IPFS content by CID (e.g. `https://ipfs.io/ipfs/<CID>`) |
+| **IPFS node** | Client that can add, get, and pin content on the network |
+
+---
+
+## 🛠️ Using IPFS
+
+### Public gateways (read-only)
+
+You can resolve CIDs via public HTTP gateways:
+
+- [ipfs.io](https://ipfs.io/) — `https://ipfs.io/ipfs/<CID>`
+- [dweb.link](https://dweb.link/) — `https://dweb.link/ipfs/<CID>`
+- [Cloudflare](https://developers.cloudflare.com/web3/ipfs-gateway/) — `https://cloudflare-ipfs.com/ipfs/<CID>`
+
+Example: `https://ipfs.io/ipfs/QmXoypizjW3WknFiJnKLwHCnL72vedxjQkDDP1mXWo6uco`
+
+### Pinning services (upload & pin)
+
+To **add** and **pin** content so it stays on the network, use a pinning service or run your own node:
+
+- [Pinata](https://www.pinata.cloud/) — Free tier, API, dashboard
+- [web3.storage](https://web3.storage/) — Free for developers, simple API
+- [NFT.Storage](https://nft.storage/) — Free for NFT metadata and assets
+- [IPFS documentation](https://docs.ipfs.tech/)
+
+---
+
+## 📝 Code: Upload and get CID (Node.js)
+
+Using the official [IPFS HTTP client](https://www.npmjs.com/package/ipfs-http-client) or a pinning API:
+
+```javascript
+// Example: Pinata API (replace with your key and secret)
+const FormData = require("form-data");
+const fs = require("fs");
+const fetch = require("node-fetch");
+
+async function uploadToPinata(filePath) {
+  const form = new FormData();
+  form.append("file", fs.createReadStream(filePath));
+
+  const res = await fetch("https://api.pinata.cloud/pinning/pinFileToIPFS", {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${process.env.PINATA_JWT}`,
+      ...form.getHeaders(),
+    },
+    body: form,
+  });
+
+  const data = await res.json();
+  return data.IpfsHash; // CID
+}
+
+// Usage
+const cid = await uploadToPinata("./metadata.json");
+console.log("CID:", cid);
+console.log("URL:", `https://ipfs.io/ipfs/${cid}`);
+```
+
+---
+
+## 📝 NFT metadata on IPFS
+
+A typical [ERC721](https://eips.ethereum.org/EIPS/eip-721) or [Metaplex](https://docs.metaplex.com/) metadata JSON is hosted on IPFS; the contract stores the URI (e.g. `ipfs://Qm...` or `https://ipfs.io/ipfs/Qm...`).
+
+**Example `metadata.json`:**
+
+```json
+{
+  "name": "My NFT",
+  "description": "Description",
+  "image": "ipfs://QmYourImageCID",
+  "attributes": [
+    { "trait_type": "Background", "value": "Blue" }
+  ]
+}
+```
+
+Upload this file to IPFS, then set your contract’s `tokenURI` to `ipfs://<CID>` or an HTTP gateway URL.
+
+---
+
+## 🔗 Resources
+
+- [IPFS docs](https://docs.ipfs.tech/)
+- [IPFS HTTP client (npm)](https://www.npmjs.com/package/ipfs-http-client)
+- [Pinata](https://www.pinata.cloud/)
+- [web3.storage](https://web3.storage/)
+- [NFT.Storage](https://nft.storage/)
+- [Content addressing (CID)](https://docs.ipfs.tech/concepts/content-addressing/)

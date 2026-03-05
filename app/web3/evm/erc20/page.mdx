@@ -1,0 +1,84 @@
+# 💰 ERC20 Tokens
+
+**ERC20** is the standard for **fungible** tokens on the EVM: one token is interchangeable with another (like currency). Defined by [EIP-20](https://eips.ethereum.org/EIPS/eip-20).
+
+---
+
+## 🎯 Why ERC20
+
+- **Composability** — Wallets and DApps expect `balanceOf`, `transfer`, `approve`, `allowance`
+- **Ecosystem** — [Uniswap](https://uniswap.org/), [OpenZeppelin](https://docs.openzeppelin.com/contracts/4.x/erc20), and tooling all support ERC20
+- **Bridges & L2s** — Wrapped assets (e.g. WETH) and bridged tokens are typically ERC20
+
+---
+
+## 📚 Core Interface
+
+Required (and common) functions and events:
+
+```solidity
+// Minimal interface (EIP-20)
+interface IERC20 {
+    function totalSupply() external view returns (uint256);
+    function balanceOf(address account) external view returns (uint256);
+    function transfer(address to, uint256 amount) external returns (bool);
+    function allowance(address owner, address spender) external view returns (uint256);
+    function approve(address spender, uint256 amount) external returns (bool);
+    function transferFrom(address from, address to, uint256 amount) external returns (bool);
+
+    event Transfer(address indexed from, address indexed to, uint256 value);
+    event Approval(address indexed owner, address indexed spender, uint256 value);
+}
+```
+
+---
+
+## 📝 Minimal ERC20 Example
+
+Using [OpenZeppelin](https://docs.openzeppelin.com/contracts/4.x/erc20):
+
+```solidity
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.0;
+
+import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
+
+contract MyToken is ERC20 {
+    constructor(uint256 initialSupply) ERC20("MyToken", "MTK") {
+        _mint(msg.sender, initialSupply);
+    }
+}
+```
+
+---
+
+## 🔧 Reading Balances (ethers.js v6)
+
+```javascript
+import { ethers } from 'ethers';
+
+const provider = new ethers.JsonRpcProvider(process.env.RPC_URL);
+const tokenAddress = '0x...';
+const abi = [
+  'function balanceOf(address) view returns (uint256)',
+  'function decimals() view returns (uint8)',
+  'function symbol() view returns (string)'
+];
+
+const token = new ethers.Contract(tokenAddress, abi, provider);
+const walletAddress = '0x...';
+
+const balance = await token.balanceOf(walletAddress);
+const decimals = await token.decimals();
+const symbol = await token.symbol();
+
+console.log(`${ethers.formatUnits(balance, decimals)} ${symbol}`);
+```
+
+---
+
+## 🔗 Resources
+
+- [EIP-20: Token Standard](https://eips.ethereum.org/EIPS/eip-20)
+- [OpenZeppelin ERC20](https://docs.openzeppelin.com/contracts/4.x/erc20)
+- [Ethers.js Contract usage](https://docs.ethers.org/v6/api/contract/)

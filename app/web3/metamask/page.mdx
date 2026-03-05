@@ -1,1 +1,71 @@
-# 🦊 Metamask
+# 🦊 MetaMask
+
+**MetaMask** is a browser and mobile wallet that lets you hold crypto, connect to dApps, and sign transactions and messages. It works with any **EVM-compatible** chain (Ethereum, Polygon, Arbitrum, Base, etc.).
+
+> 📖 **Full walkthrough:** For a step-by-step intro to wallets, keys, gas, and DeFi basics, see **[MetaMask & Wallet Fundamentals](/weekly-presentations/subpage-1)** in our weekly presentations.
+
+---
+
+## 🎯 What MetaMask Is (and Isn’t)
+
+### ❌ MetaMask is NOT
+- A place where your coins “live”
+- A bank or custodian
+- The blockchain itself
+
+### ✅ MetaMask IS
+- **Key manager** — Stores your private keys (encrypted with your password)
+- **RPC client** — Talks to blockchains via the provider (e.g. `window.ethereum`)
+- **Signer** — Signs transactions and messages so the network accepts them
+
+The **blockchain** holds the state (balances, contracts). MetaMask only holds keys and sends signed transactions. If MetaMask disappeared, your accounts would still exist; you’d recover them with your seed phrase in another wallet.
+
+---
+
+## 🔑 Keys and Seed Phrase
+
+| Concept | Description |
+|--------|-------------|
+| **Seed phrase** | 12 or 24 words that derive all your keys. Back it up offline; never share it. |
+| **Private key** | Proves ownership of an address. Never share; required to sign. |
+| **Address** | Public identifier (e.g. `0x1234...`). Safe to share; used to receive funds. |
+
+Whoever has the **seed phrase** controls every account derived from it. Use a **strong password** for MetaMask; it only encrypts the wallet locally and does not protect you if the seed is leaked.
+
+---
+
+## 🌐 Adding Networks and Using dApps
+
+- **Add a network** — Settings → Networks → Add network (or “Add a network manually”). You need the chain ID, RPC URL, and optionally block explorer.
+- **Switch chain** — Click the network dropdown in MetaMask; dApps can also request a switch via `wallet_switchEthereumChain`.
+- **Connect a dApp** — The dApp calls `eth_requestAccounts`; MetaMask shows a connect prompt. You can revoke site access in Settings → Connected sites.
+
+For building dApps that connect to MetaMask, see [EVM DApp](/web3/evm/dapp) (e.g. [Wagmi & RainbowKit](/web3/evm/dapp/wagmi-and-rainbowkit)).
+
+---
+
+## ⛽ Gas and Fees
+
+- **Gas** — Units of computation; you pay in the chain’s native token (ETH, MATIC, etc.).
+- **Gas price** — Price per unit; higher usually means faster inclusion.
+- **Gas limit** — Cap on units; unused gas is refunded.
+
+MetaMask lets you adjust gas (or use “market” estimates). For more on gas and DeFi flows, see [MetaMask & Wallet Fundamentals](/weekly-presentations/subpage-1).
+
+---
+
+## 🔐 Security Basics
+
+- **Never share** your seed phrase or private key (except in controlled dev/test setups).
+- **Verify URLs** — Phishing sites mimic MetaMask or dApp UIs; always check the address bar.
+- **Revoke approvals** — Use [Revoke.cash](https://revoke.cash/) or similar to revoke token approvals when you no longer use a dApp.
+- **Use a hardware wallet** for large holdings; MetaMask supports Ledger and other devices.
+
+---
+
+## 🔗 Resources
+
+- [MetaMask official docs](https://docs.metamask.io/)
+- [MetaMask developer docs](https://docs.metamask.io/wallet/how-to/use-mobile/connect-to-site/) (connecting dApps)
+- [EIP-1193](https://eips.ethereum.org/EIPS/eip-1193) — Ethereum provider API (`window.ethereum`)
+- [TUM: MetaMask & Wallet Fundamentals](/weekly-presentations/subpage-1) — Wallets, keys, gas, and DeFi basics

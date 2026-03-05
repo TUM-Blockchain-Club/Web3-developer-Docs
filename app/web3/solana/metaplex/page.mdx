@@ -1,0 +1,124 @@
+# 🎨 Metaplex (NFTs)
+
+**Metaplex** is the de facto standard and toolkit for **NFTs on Solana**: metadata (name, description, image), collections, and royalty enforcement. The [Metaplex Token Metadata Program](https://github.com/metaplex-foundation/metaplex-program-library/tree/master/token-metadata) defines the on-chain layout and instructions.
+
+---
+
+## 🎯 Why Metaplex
+
+- **Ecosystem standard** — [Magic Eden](https://magiceden.io/), [Tensor](https://www.tensor.trade/), and most Solana NFT apps use Metaplex metadata
+- **Metadata accounts** — Store URI (pointing to JSON), name, symbol, creators, royalties
+- **Collections** — Group NFTs under a verified collection
+- **SDKs** — [JS SDK](https://github.com/metaplex-foundation/js) and [Umi](https://github.com/metaplex-foundation/umi) for creating and reading NFTs
+
+---
+
+## 📚 Core Concepts
+
+| Concept | Description |
+|--------|-------------|
+| **Mint** | SPL Token mint account; the NFT is a token with supply 1 and decimals 0 |
+| **Metadata account** | PDA (Program Derived Address) owned by the Metaplex program; holds URI, name, symbol, creators, etc. |
+| **Master Edition** | For limited prints or verification; used by the Metaplex program |
+| **JSON off-chain** | URI in metadata points to JSON with `name`, `description`, `image`, `attributes` (e.g. on [IPFS](/web3/ipfs) or Arweave) |
+
+---
+
+## 📝 Metadata JSON (Off-Chain)
+
+Your `tokenURI` should resolve to JSON like:
+
+```json
+{
+  "name": "My NFT",
+  "symbol": "MNFT",
+  "description": "Description here",
+  "image": "https://arweave.net/...",
+  "attributes": [
+    { "trait_type": "Background", "value": "Blue" }
+  ],
+  "properties": {
+    "files": [{ "uri": "https://...", "type": "image/png" }],
+    "category": "image"
+  }
+}
+```
+
+Host on [IPFS](/web3/ipfs), [Arweave](https://www.arweave.org/), or a CDN. See [Metaplex standard](https://docs.metaplex.com/programs/token-metadata/accounts/metadata).
+
+---
+
+## 📝 Creating an NFT (Metaplex JS)
+
+Using [@metaplex-foundation/mpl-token-metadata](https://github.com/metaplex-foundation/metaplex-program-library/tree/master/token-metadata) and the JS SDK:
+
+```javascript
+import { createUmi } from "@metaplex-foundation/umi-bundle-defaults";
+import { createMetadataAccountV3 } from "@metaplex-foundation/mpl-token-metadata";
+import { createSignerFromKeypair, signerIdentity } from "@metaplex-foundation/umi";
+import { Keypair } from "@solana/web3.js";
+
+const umi = createUmi("https://api.devnet.solana.com");
+const keypair = Keypair.fromSecretKey(/* ... */);
+const signer = createSignerFromKeypair(umi, keypair);
+umi.use(signerIdentity(signer));
+
+// After creating the mint and token account (e.g. with @solana/spl-token)...
+const metadata = {
+  name: "My NFT",
+  symbol: "MNFT",
+  uri: "https://arweave.net/your-metadata-json",
+  sellerFeeBasisPoints: 500, // 5%
+  creators: null,
+  collection: null,
+  uses: null,
+};
+
+await createMetadataAccountV3(umi, {
+  mint: mintKey,
+  mintAuthority: signer,
+  payer: signer,
+  updateAuthority: signer.publicKey,
+  data: {
+    name: metadata.name,
+    symbol: metadata.symbol,
+    uri: metadata.uri,
+    sellerFeeBasisPoints: metadata.sellerFeeBasisPoints,
+    creators: metadata.creators,
+    collection: metadata.collection,
+    uses: metadata.uses,
+  },
+  isMutable: true,
+  collectionDetails: null,
+}).sendAndConfirm(umi);
+```
+
+---
+
+## 📝 Reading NFT Metadata
+
+```javascript
+import { createUmi } from "@metaplex-foundation/umi-bundle-defaults";
+import { fetchMetadata } from "@metaplex-foundation/mpl-token-metadata";
+import { publicKey } from "@metaplex-foundation/umi";
+
+const umi = createUmi("https://api.devnet.solana.com");
+const mint = publicKey("MintPubkey...");
+
+const metadata = await fetchMetadata(umi, mint);
+console.log(metadata.name, metadata.uri);
+
+// Fetch JSON from URI
+const json = await fetch(metadata.uri).then((r) => r.json());
+console.log(json.image, json.attributes);
+```
+
+---
+
+## 🔗 Resources
+
+- [Metaplex docs](https://docs.metaplex.com/)
+- [Token Metadata program](https://github.com/metaplex-foundation/metaplex-program-library/tree/master/token-metadata)
+- [Metaplex JS SDK](https://github.com/metaplex-foundation/js)
+- [NFT standard (Metaplex)](https://docs.metaplex.com/programs/token-metadata/)
+- [Solana Cookbook: NFTs](https://solanacookbook.com/guides/get-program-accounts.html#get-nft-by-mint-address)

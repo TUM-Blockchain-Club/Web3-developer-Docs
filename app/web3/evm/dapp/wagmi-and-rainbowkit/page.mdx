@@ -1,0 +1,123 @@
+# 🌈 Wagmi & RainbowKit
+
+**Wagmi** provides React hooks for connecting to EVM wallets, reading chain state, and calling contracts. **RainbowKit** adds a ready-made connect-button and modal (MetaMask, WalletConnect, Coinbase, etc.). Together they are a popular, modular choice for EVM dApps.
+
+---
+
+## 🎯 Why Wagmi + RainbowKit
+
+- **Modular** — Use with any React/Next.js app; no full-stack template required
+- **Hooks** — `useAccount`, `useBalance`, `useContractRead`, `useContractWrite`, `useSwitchChain`
+- **RainbowKit** — One `<ConnectButton />`; supports many wallets and chains
+- **Viem under the hood** — [Wagmi](https://wagmi.sh/) is built on [Viem](https://viem.sh/)
+
+---
+
+## 🚀 Quick Setup (Next.js)
+
+Install:
+
+```bash
+npm install wagmi viem @rainbow-me/rainbowkit
+```
+
+Configure providers and add the connect button:
+
+```javascript
+// app/providers.jsx (or layout wrapper)
+"use client";
+
+import { WagmiProvider, createConfig, http } from "wagmi";
+import { mainnet, sepolia } from "wagmi/chains";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { RainbowKitProvider, getDefaultConfig } from "@rainbow-me/rainbowkit";
+import "@rainbow-me/rainbowkit/styles.css";
+
+const config = getDefaultConfig({
+  appName: "My dApp",
+  projectId: process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID,
+  chains: [mainnet, sepolia],
+  ssr: true,
+});
+
+const queryClient = new QueryClient();
+
+export function Providers({ children }) {
+  return (
+    <WagmiProvider config={config}>
+      <QueryClientProvider client={queryClient}>
+        <RainbowKitProvider>{children}</RainbowKitProvider>
+      </QueryClientProvider>
+    </WagmiProvider>
+  );
+}
+```
+
+```javascript
+// In any component
+import { ConnectButton } from "@rainbow-me/rainbowkit";
+
+export default function Header() {
+  return <ConnectButton />;
+}
+```
+
+---
+
+## 📝 Reading Contract Data
+
+```javascript
+import { useContractRead } from "wagmi";
+
+const erc20Abi = [
+  { inputs: [{ name: "account", type: "address" }], name: "balanceOf", outputs: [{ type: "uint256" }], stateMutability: "view", type: "function" },
+];
+
+function Balance({ tokenAddress, userAddress }) {
+  const { data: balance } = useContractRead({
+    address: tokenAddress,
+    abi: erc20Abi,
+    functionName: "balanceOf",
+    args: [userAddress],
+  });
+
+  return <span>Balance: {balance?.toString() ?? "—"}</span>;
+}
+```
+
+---
+
+## 📝 Writing to Contracts
+
+```javascript
+import { useContractWrite, useWaitForTransactionReceipt } from "wagmi";
+
+function MintButton({ contractAddress, abi }) {
+  const { write, data: hash, isPending } = useContractWrite({
+    address: contractAddress,
+    abi,
+    functionName: "mint",
+  });
+
+  const { isLoading: isConfirming, isSuccess } = useWaitForTransactionReceipt({ hash });
+
+  return (
+    <>
+      <button onClick={() => write({ args: [userAddress, amount] })} disabled={isPending}>
+        {isPending ? "Confirm in wallet" : "Mint"}
+      </button>
+      {isConfirming && <p>Confirming…</p>}
+      {isSuccess && <p>Minted.</p>}
+    </>
+  );
+}
+```
+
+---
+
+## 🔗 Resources
+
+- [Wagmi docs](https://wagmi.sh/)
+- [RainbowKit docs](https://www.rainbowkit.com/docs/introduction)
+- [Viem](https://viem.sh/) — Low-level library used by Wagmi
+- [WalletConnect Cloud](https://cloud.walletconnect.com/) — For `projectId` used by RainbowKit

@@ -1,0 +1,61 @@
+# 📦 Accounts
+
+On Solana, **accounts** are the units of on-chain state. They hold SOL (lamports), arbitrary data, and an **owner** (a program that can modify them). There are no “contract storage” slots like on the EVM — everything is an account.
+
+---
+
+## 🎯 Why Accounts Matter
+
+- **Everything is an account** — Program code, user data, token balances, NFT metadata
+- **Explicit in instructions** — Every instruction lists which accounts it reads/writes; the runtime enforces permissions
+- **Rent** — Accounts must hold enough SOL to be rent-exempt or they can be reclaimed
+
+---
+
+## 📚 Account Structure
+
+From the [Solana docs](https://docs.solana.com/developing/programming-model/accounts):
+
+| Field | Description |
+|-------|-------------|
+| **lamports** | Balance in lamports (1 SOL = 10^9 lamports) |
+| **owner** | Program ID that can modify this account |
+| **data** | Opaque byte array (layout defined by the owner program) |
+| **executable** | Whether the account is program code |
+| **rent_epoch** | Used for rent calculation |
+
+Only the **owner** program can change the account’s data or assign a new owner. Clients and other programs pass account references in each instruction.
+
+---
+
+## 📝 Reading an Account (Node / @solana/web3.js)
+
+```javascript
+import { Connection, PublicKey } from "@solana/web3.js";
+
+const connection = new Connection("https://api.devnet.solana.com");
+const address = new PublicKey("YourAccountPubkey...");
+
+const accountInfo = await connection.getAccountInfo(address);
+if (accountInfo) {
+  console.log("Owner:", accountInfo.owner.toBase58());
+  console.log("Lamports:", accountInfo.lamports);
+  console.log("Data length:", accountInfo.data.length);
+  // Data layout depends on the program (e.g. Metaplex, SPL Token)
+}
+```
+
+---
+
+## 📝 Account Sizes and Rent
+
+- **Rent-exempt minimum** — Accounts below a size threshold must hold enough lamports to be rent-exempt. See [rent](https://docs.solana.com/implemented-proposals/rent).
+- **Closing** — When an account is no longer needed, a program can close it and send the lamports to a specified account (e.g. user).
+
+---
+
+## 🔗 Resources
+
+- [Solana: Programming model (accounts)](https://docs.solana.com/developing/programming-model/accounts)
+- [Solana: Account model](https://docs.solana.com/developing/programming-model/accounts)
+- [@solana/web3.js: getAccountInfo](https://solana-labs.github.io/solana-web3.js/classes/Connection.html#getAccountInfo)
