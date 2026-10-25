@@ -7,3 +7,5 @@ Install with `pnpm install --frozen-lockfile --ignore-scripts`, then run the ava
 Security overrides in pnpm-workspace.yaml pin patched indirect dependencies where parent packages still select an affected version. Review overrides when upgrading their parents; do not replace incompatible major versions merely to clear an audit.
 
 Nextra 4.6.1 removes children from its layout props before parsing the theme configuration, but its schema still requires that property under patched Zod. The versioned pnpm patch omits children from that configuration schema while keeping the other validations. Keep Zod patched; remove this package patch only after an upstream fix passes build and the documentation/404 HTTP checks. Search indexing runs explicitly in the build command with the locked Pagefind package.
+
+On Vercel, the Next.js adapter moves prerendered HTML into .vercel/output/static before next build returns. Index that output directly and write _pagefind there. Local builds index .next/server/app into public/_pagefind. A missing or empty index fails the build.
