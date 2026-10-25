@@ -1,0 +1,9 @@
+packages:
+  - .
+
+overrides:
+  "@xmldom/xmldom": "0.9.12"
+  "mermaid>katex": "0.18.2"
+
+patchedDependencies:
+  nextra-theme-docs@4.6.1: patches/nextra-theme-docs@4.6.1.patch

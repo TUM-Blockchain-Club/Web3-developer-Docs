@@ -12,6 +12,8 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    "types/routes.d.ts", // Generated Next.js declarations.
+    "public/_pagefind/**", // Generated search index.
   ]),
 ]);
 
