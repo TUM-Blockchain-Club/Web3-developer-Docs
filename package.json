@@ -4,9 +4,10 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build && if [ \"$VERCEL\" = \"1\" ]; then pagefind --site .vercel/output/static --output-path .vercel/output/static/_pagefind; else pagefind --site .next/server/app --output-path public/_pagefind; fi",
+    "build": "next build && node scripts/index-search.mjs",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "test:search": "node --test scripts/index-search.test.mjs"
   },
   "dependencies": {
     "next": "16.4.3",
